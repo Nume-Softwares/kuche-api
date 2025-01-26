@@ -15,6 +15,14 @@ async function bootstrap() {
     .setTitle('Kuche API')
     .setDescription('API para gerenciamento do software')
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'Bearer',
+        bearerFormat: 'JWT',
+      },
+      'access-token',
+    )
     .build()
 
   const documentFactory = () => SwaggerModule.createDocument(app, config)
