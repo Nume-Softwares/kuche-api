@@ -15,9 +15,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger'
 import { compare } from 'bcryptjs'
-import { ZodValidationPipe } from '@/pipes/zod-valitation-pipe'
+import { ZodValidationPipe } from '@/http/shared/pipes/zod-valitation-pipe'
 import { PrismaService } from '@/prisma/prisma.service'
 import { z } from 'zod'
+import { Public } from '../auth/public'
 
 const authenticateRestaurantBodySchema = z.object({
   email: z.string().email(),
@@ -44,6 +45,7 @@ type AuthenticateRestaurantBody = z.infer<
 
 @ApiTags('Restaurante')
 @Controller('/restaurant/sign-in')
+@Public()
 export class AuthenticateRestaurantController {
   constructor(private jwt: JwtService, private prisma: PrismaService) {}
 
@@ -83,9 +85,12 @@ export class AuthenticateRestaurantController {
       throw new UnauthorizedException('User credentials do not match')
     }
 
-    const accessToken = this.jwt.sign({ sub: user.id })
+    const accessToken = this.jwt.sign({ sub: user.id }, { expiresIn: '1d' })
 
     return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
       access_token: accessToken,
     }
   }

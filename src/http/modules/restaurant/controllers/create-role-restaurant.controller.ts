@@ -4,7 +4,6 @@ import {
   Controller,
   HttpCode,
   Post,
-  UseGuards,
   UsePipes,
 } from '@nestjs/common'
 import {
@@ -15,10 +14,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger'
-import { ZodValidationPipe } from '@/pipes/zod-valitation-pipe'
+import { ZodValidationPipe } from '@/http/shared/pipes/zod-valitation-pipe'
 import { PrismaService } from '@/prisma/prisma.service'
 import { z } from 'zod'
-import { JwtAuthGuard } from '../jwt-auth.guard'
 
 const createRoleRestaurantBodySchema = z.object({
   name: z.string(),
@@ -37,7 +35,6 @@ type CreateRoleRestaurantBody = z.infer<typeof createRoleRestaurantBodySchema>
 @ApiTags('Restaurante')
 @ApiBearerAuth('access-token')
 @Controller('/restaurant/role')
-@UseGuards(JwtAuthGuard)
 export class CreateRoleRestaurantController {
   constructor(private prisma: PrismaService) {}
 

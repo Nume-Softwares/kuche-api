@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common'
-import { TokenPayloadRestaurantSchema } from './restaurant/jwt.strategy'
+import { TokenPayloadRestaurantSchema } from './restaurant/auth/jwt.strategy'
 
 export const CurrentRestaurant = createParamDecorator(
   (_: unknown, context: ExecutionContext) => {

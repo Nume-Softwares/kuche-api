@@ -5,12 +5,18 @@ import { PassportModule } from '@nestjs/passport'
 import { Env } from '@/env'
 import { AuthenticateRestaurantController } from './controllers/authenticate-restaurant.controller'
 import { PrismaService } from '@/prisma/prisma.service'
-import { JwtStrategy } from './jwt.strategy'
 import { CreateRoleRestaurantController } from './controllers/create-role-restaurant.controller'
 import { GetMembersRestaurantController } from './controllers/get-members-restaurant.controller'
+import { CreateRestaurantController } from './controllers/create-restaurant.controller'
+import { APP_GUARD } from '@nestjs/core'
+import { JwtAuthGuard } from './auth/jwt-auth.guard'
+import { AuthRestaurantModule } from './auth/authRestaurant.module'
+import { GetRolesRestaurantController } from './controllers/get-roles-restaurant.controller'
+import { CreateMemberRestaurantController } from './controllers/create-member-restaurant.controller'
 
 @Module({
   imports: [
+    AuthRestaurantModule,
     PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -35,7 +41,16 @@ import { GetMembersRestaurantController } from './controllers/get-members-restau
     AuthenticateRestaurantController,
     CreateRoleRestaurantController,
     GetMembersRestaurantController,
+    CreateRestaurantController,
+    GetRolesRestaurantController,
+    CreateMemberRestaurantController,
   ],
-  providers: [PrismaService, JwtStrategy],
+  providers: [
+    PrismaService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class RestaurantModule {}

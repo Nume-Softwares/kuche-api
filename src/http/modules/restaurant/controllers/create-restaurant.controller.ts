@@ -8,9 +8,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger'
 import { hash } from 'bcryptjs'
-import { ZodValidationPipe } from '@/pipes/zod-valitation-pipe'
+import { ZodValidationPipe } from '@/http/shared/pipes/zod-valitation-pipe'
 import { PrismaService } from '@/prisma/prisma.service'
 import { z } from 'zod'
+import { Public } from '../auth/public'
 
 const createRestaurantBodySchema = z.object({
   name: z.string(),
@@ -42,6 +43,7 @@ type CreateRestaurantBody = z.infer<typeof createRestaurantBodySchema>
 
 @ApiTags('Restaurante')
 @Controller('/restaurant/sign-up')
+@Public()
 export class CreateRestaurantController {
   constructor(private prisma: PrismaService) {}
 

@@ -11,6 +11,13 @@ async function bootstrap() {
 
   const port = configService.get('PORT', { infer: true })
 
+  app.enableCors({
+    origin: configService.get('PORT_DEV'),
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  })
+
   const config = new DocumentBuilder()
     .setTitle('Kuche API')
     .setDescription('API para gerenciamento do software')

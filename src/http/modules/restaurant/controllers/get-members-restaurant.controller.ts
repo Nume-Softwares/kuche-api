@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Query, UseGuards } from '@nestjs/common'
+import { Controller, Get, HttpCode, Query } from '@nestjs/common'
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -6,11 +6,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger'
 import { PrismaService } from '@/prisma/prisma.service'
-import { JwtAuthGuard } from '../jwt-auth.guard'
-import { CurrentRestaurant } from '@/modules/current-restaurant.decorator'
-import { TokenPayloadRestaurantSchema } from '../jwt.strategy'
-import { ZodValidationPipe } from '@/pipes/zod-valitation-pipe'
+import { TokenPayloadRestaurantSchema } from '../auth/jwt.strategy'
+import { ZodValidationPipe } from '@/http/shared/pipes/zod-valitation-pipe'
 import { z } from 'zod'
+import { CurrentRestaurant } from '../../current-restaurant.decorator'
 
 const pageQueryParamSchema = z
   .string()
@@ -26,7 +25,6 @@ const queryValidationPipe = new ZodValidationPipe(pageQueryParamSchema)
 @ApiTags('Restaurante')
 @ApiBearerAuth('access-token')
 @Controller('/restaurant/members')
-@UseGuards(JwtAuthGuard)
 export class GetMembersRestaurantController {
   constructor(private prisma: PrismaService) {}
 
@@ -42,7 +40,19 @@ export class GetMembersRestaurantController {
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
     @Query('page', queryValidationPipe) page: PageQueryParamSchema,
   ) {
-    const perPage = 1
+    const perPage = 8
+
+    const totalMembers = await this.prisma.member.count({
+      where: {
+        restaurantId: payload.sub,
+      },
+    })
+
+    if (totalMembers === 0) {
+      return { members: [], totalPages: 0 }
+    }
+
+    const totalPages = Math.ceil(totalMembers / perPage)
 
     const getMembers = await this.prisma.member.findMany({
       take: perPage,
@@ -50,8 +60,20 @@ export class GetMembersRestaurantController {
       where: {
         restaurantId: payload.sub,
       },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        isActive: true,
+        role: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     })
 
-    return getMembers
+    return { members: getMembers, totalPages }
   }
 }
