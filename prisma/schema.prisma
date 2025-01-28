@@ -75,6 +75,7 @@ model Restaurant {
   menuItems  MenuItem[]
   categories Category[]
   members    Member[]
+  Log        Log[]
 
   @@index([email])
   @@map("restaurants")
@@ -247,9 +248,12 @@ model Log {
   createdAt      DateTime @default(now()) @map("created_at")
   customerId     String?  @map("customer_id")
   memberId       String?  @map("member_id")
+  restaurantId   String   @map("restaurant_id")
 
   customer Customer? @relation(fields: [customerId], references: [id])
   member   Member?   @relation(fields: [memberId], references: [id])
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
 
   @@index([createdAt])
   @@index([customerId])
