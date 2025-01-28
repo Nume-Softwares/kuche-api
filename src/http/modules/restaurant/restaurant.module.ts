@@ -3,16 +3,21 @@ import { ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
 import { Env } from '@/env'
-import { AuthenticateRestaurantController } from './controllers/authenticate-restaurant.controller'
 import { PrismaService } from '@/prisma/prisma.service'
-import { CreateRoleRestaurantController } from './controllers/create-role-restaurant.controller'
-import { GetMembersRestaurantController } from './controllers/get-members-restaurant.controller'
-import { CreateRestaurantController } from './controllers/create-restaurant.controller'
 import { APP_GUARD } from '@nestjs/core'
 import { JwtAuthGuard } from './auth/jwt-auth.guard'
 import { AuthRestaurantModule } from './auth/authRestaurant.module'
-import { GetRolesRestaurantController } from './controllers/get-roles-restaurant.controller'
-import { CreateMemberRestaurantController } from './controllers/create-member-restaurant.controller'
+import { CreateCategoryRestaurantController } from './controllers/categories/create-category.restaurant.controller'
+import { GetCategoriesRestaurantController } from './controllers/categories/get-categories.restaurant.controller'
+import { StatusCategoryRestaurantController } from './controllers/categories/status-category.restaurant.controller'
+import { UpdateCategoryRestaurantController } from './controllers/categories/update-category.restaurant.controller'
+import { GetMembersRestaurantController } from './controllers/members/get-members-restaurant.controller'
+import { CreateMemberRestaurantController } from './controllers/members/create-member-restaurant.controller'
+import { CreateRestaurantController } from './controllers/restaurant/create-restaurant.controller'
+import { CreateRoleRestaurantController } from './controllers/roles/create-role-restaurant.controller'
+import { GetRolesRestaurantController } from './controllers/roles/get-roles-restaurant.controller'
+import { AuthenticateMemberController } from './controllers/members/authenticate-member-restaurant.controller'
+import { CreateMenuItemRestaurantController } from './controllers/menu-items/create-menu-item.controller'
 
 @Module({
   imports: [
@@ -38,12 +43,17 @@ import { CreateMemberRestaurantController } from './controllers/create-member-re
     }),
   ],
   controllers: [
-    AuthenticateRestaurantController,
-    CreateRoleRestaurantController,
+    CreateCategoryRestaurantController,
+    GetCategoriesRestaurantController,
+    StatusCategoryRestaurantController,
+    UpdateCategoryRestaurantController,
+    AuthenticateMemberController,
+    CreateMemberRestaurantController,
     GetMembersRestaurantController,
     CreateRestaurantController,
+    CreateRoleRestaurantController,
     GetRolesRestaurantController,
-    CreateMemberRestaurantController,
+    CreateMenuItemRestaurantController,
   ],
   providers: [
     PrismaService,
@@ -52,5 +62,6 @@ import { CreateMemberRestaurantController } from './controllers/create-member-re
       useClass: JwtAuthGuard,
     },
   ],
+  exports: [PrismaService, AuthRestaurantModule, PassportModule],
 })
 export class RestaurantModule {}
