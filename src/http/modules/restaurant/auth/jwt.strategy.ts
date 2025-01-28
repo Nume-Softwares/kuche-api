@@ -7,6 +7,7 @@ import { z } from 'zod'
 
 const tokenPayloadRestaurantSchema = z.object({
   sub: z.string().uuid(),
+  restaurantId: z.string().uuid(),
 })
 
 export type TokenPayloadRestaurantSchema = z.infer<
