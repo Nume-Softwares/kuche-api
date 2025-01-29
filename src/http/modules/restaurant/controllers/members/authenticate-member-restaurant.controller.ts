@@ -38,6 +38,12 @@ export class AuthenticateMemberDto {
     example: 'senha123',
   })
   password!: string
+
+  @ApiProperty({
+    description: 'ID do Restaurant',
+    example: 'ca3ab4f9-48a8-43f1-94f9-b9c38a640224',
+  })
+  restaurantId!: string
 }
 
 type AuthenticateRestaurantBody = z.infer<typeof authenticateMemberBodySchema>
@@ -71,7 +77,12 @@ export class AuthenticateMemberController {
     const { email, password, restaurantId } = body
 
     const member = await this.prisma.member.findUnique({
-      where: { email },
+      where: {
+        email_restaurantId: {
+          email,
+          restaurantId,
+        },
+      },
     })
 
     if (!member) {
