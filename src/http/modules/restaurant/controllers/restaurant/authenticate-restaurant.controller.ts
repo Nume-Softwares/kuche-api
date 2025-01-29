@@ -14,7 +14,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger'
-import { compare } from 'bcryptjs'
 import { ZodValidationPipe } from '@/http/shared/pipes/zod-valitation-pipe'
 import { PrismaService } from '@/prisma/prisma.service'
 import { z } from 'zod'
@@ -22,7 +21,6 @@ import { Public } from '../../auth/public'
 
 const authenticateRestaurantBodySchema = z.object({
   email: z.string().email(),
-  password: z.string(),
 })
 
 export class AuthenticateRestaurantDto {
@@ -31,12 +29,6 @@ export class AuthenticateRestaurantDto {
     example: 'restaurante@xyz.com',
   })
   email!: string
-
-  @ApiProperty({
-    description: 'Senha do restaurante',
-    example: 'senha123',
-  })
-  password!: string
 }
 
 type AuthenticateRestaurantBody = z.infer<
@@ -69,19 +61,13 @@ export class AuthenticateRestaurantController {
   })
   @ApiResponse({ status: 401, description: 'Não Autorizado' })
   async handle(@Body() body: AuthenticateRestaurantBody) {
-    const { email, password } = body
+    const { email } = body
 
     const user = await this.prisma.restaurant.findUnique({
       where: { email },
     })
 
     if (!user) {
-      throw new UnauthorizedException('User credentials do not match')
-    }
-
-    const isPasswordValid = await compare(password, user.passwordHash)
-
-    if (!isPasswordValid) {
       throw new UnauthorizedException('User credentials do not match')
     }
 
