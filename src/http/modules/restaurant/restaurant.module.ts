@@ -18,6 +18,12 @@ import { CreateRoleRestaurantController } from './controllers/roles/create-role-
 import { GetRolesRestaurantController } from './controllers/roles/get-roles-restaurant.controller'
 import { AuthenticateMemberController } from './controllers/members/authenticate-member-restaurant.controller'
 import { CreateMenuItemRestaurantController } from './controllers/menu-items/create-menu-item.controller'
+import { UpdateMenuItemRestaurantController } from './controllers/menu-items/edit-menu-item.controller'
+import { UpdateStatusMenuItemRestaurantController } from './controllers/menu-items/update-status-menu-item.controller'
+import { DeleteCategoryRestaurantController } from './controllers/categories/delete-category.restaurant.controller'
+import { DeleteMemberRestaurantController } from './controllers/members/delete-member-restaurant.controller'
+import { DeleteMenuItemRestaurantController } from './controllers/menu-items/delete-menu-item.controller'
+import { CreateMenuItemOptionRestaurantController } from './controllers/menu-item-option/create-menu-option.controller'
 
 @Module({
   imports: [
@@ -47,13 +53,19 @@ import { CreateMenuItemRestaurantController } from './controllers/menu-items/cre
     GetCategoriesRestaurantController,
     StatusCategoryRestaurantController,
     UpdateCategoryRestaurantController,
+    DeleteCategoryRestaurantController,
     AuthenticateMemberController,
     CreateMemberRestaurantController,
     GetMembersRestaurantController,
+    DeleteMemberRestaurantController,
     CreateRestaurantController,
     CreateRoleRestaurantController,
     GetRolesRestaurantController,
     CreateMenuItemRestaurantController,
+    UpdateMenuItemRestaurantController,
+    UpdateStatusMenuItemRestaurantController,
+    DeleteMenuItemRestaurantController,
+    CreateMenuItemOptionRestaurantController,
   ],
   providers: [
     PrismaService,
