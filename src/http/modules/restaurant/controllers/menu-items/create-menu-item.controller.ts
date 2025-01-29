@@ -28,7 +28,7 @@ const createMenuItemRestaurantControllerSchema = z.object({
 
 export class CreateMenuItemRestaurantDto {
   @ApiProperty({
-    description: 'Nome da Categoria',
+    description: 'Nome do Item',
     example: 'Pizza de Calabresa',
   })
   name!: string
@@ -98,7 +98,15 @@ export class CreateMenuItemRestaurantController {
       throw new UnauthorizedException('Unauthorized')
     }
 
-    if (getMember.role.name !== 'Admin' || 'Gerente' || 'Suporte Técnico') {
+    if (!getMember.isActive) {
+      throw new UnauthorizedException('Unauthorized - no active member')
+    }
+
+    if (
+      !['Admin', 'Gerente', 'Suporte Técnico', 'Marketing'].includes(
+        getMember.role.name,
+      )
+    ) {
       throw new UnauthorizedException('You are not allowed to do this')
     }
 

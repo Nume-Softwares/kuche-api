@@ -77,7 +77,13 @@ export class CreateCategoryRestaurantController {
       throw new UnauthorizedException('Unauthorized')
     }
 
-    if (getMember.role.name !== 'Admin' || 'Gerente' || 'Suporte Técnico') {
+    if (!getMember.isActive) {
+      throw new UnauthorizedException('Unauthorized - no active member')
+    }
+
+    if (
+      !['Admin', 'Gerente', 'Suporte Técnico'].includes(getMember.role.name)
+    ) {
       throw new UnauthorizedException('You are not allowed to do this')
     }
 
