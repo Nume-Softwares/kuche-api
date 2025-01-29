@@ -7,7 +7,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger'
-import { hash } from 'bcryptjs'
 import { ZodValidationPipe } from '@/http/shared/pipes/zod-valitation-pipe'
 import { PrismaService } from '@/prisma/prisma.service'
 import { z } from 'zod'
@@ -16,7 +15,6 @@ import { Public } from '../../auth/public'
 const createRestaurantBodySchema = z.object({
   name: z.string(),
   email: z.string().email(),
-  password: z.string().min(8),
 })
 
 export class CreateRestaurantDto {
@@ -62,14 +60,13 @@ export class CreateRestaurantController {
       example: {
         name: 'Restaurante XYZ',
         email: 'restaurante@xyz.com',
-        passwordHash: 'hashedpassword123',
       },
     },
   })
   @ApiResponse({ status: 409, description: 'E-mail já existe' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   async handle(@Body() body: CreateRestaurantBody) {
-    const { name, email, password } = body
+    const { name, email } = body
 
     const restaurantWithSameEmail = await this.prisma.restaurant.findUnique({
       where: { email },
@@ -81,13 +78,10 @@ export class CreateRestaurantController {
       )
     }
 
-    const hashedPassword = await hash(password, 8)
-
     await this.prisma.restaurant.create({
       data: {
         name,
         email,
-        passwordHash: hashedPassword,
       },
     })
   }
