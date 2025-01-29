@@ -62,20 +62,21 @@ model Role {
 }
 
 model Restaurant {
-  id           String    @id @default(uuid())
-  name         String
-  email        String    @unique
-  passwordHash String    @map("password_hash")
-  wppToken     String?   @map("wpp_token")
-  wppSession   String?   @map("wpp_session")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime? @updatedAt @map("updated_at")
+  id         String    @id @default(uuid())
+  name       String
+  email      String    @unique
+  isActive   Boolean   @default(true)
+  wppToken   String?   @map("wpp_token")
+  wppSession String?   @map("wpp_session")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime? @updatedAt @map("updated_at")
 
-  customers  Customer[]
-  menuItems  MenuItem[]
-  categories Category[]
-  members    Member[]
-  Log        Log[]
+  customers      Customer[]
+  menuItems      MenuItem[]
+  categories     Category[]
+  members        Member[]
+  Log            Log[]
+  MenuItemOption MenuItemOption[]
 
   @@index([email])
   @@map("restaurants")
@@ -84,7 +85,7 @@ model Restaurant {
 model Member {
   id           String    @id @default(uuid())
   name         String
-  email        String    @unique
+  email        String
   isActive     Boolean   @default(true)
   passwordHash String    @map("password_hash")
   createdAt    DateTime  @default(now()) @map("created_at")
@@ -96,6 +97,7 @@ model Member {
   restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   logs       Log[]
 
+  @@unique([email, restaurantId])
   @@map("members")
 }
 
@@ -162,14 +164,16 @@ model MenuItem {
 }
 
 model MenuItemOption {
-  id        String    @id @default(uuid())
-  name      String
-  price     Decimal   @db.Decimal(10, 2)
-  isActive  Boolean   @default(true) @map("is_active")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @updatedAt @map("updated_at")
+  id           String    @id @default(uuid())
+  name         String
+  price        Decimal   @db.Decimal(10, 2)
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
+  restaurantId String    @map("restaurant_id")
 
-  menuItems MenuItemOptionRelation[]
+  menuItems  MenuItemOptionRelation[]
+  restaurant Restaurant               @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@index([isActive])
   @@map("menu_items_options")
