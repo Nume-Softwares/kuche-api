@@ -4,6 +4,7 @@ import {
   Controller,
   HttpCode,
   Post,
+  UnauthorizedException,
 } from '@nestjs/common'
 import {
   ApiBearerAuth,
@@ -83,8 +84,36 @@ export class CreateMemberRestaurantController {
   ) {
     const { email, name, password, roleId } = body
 
+    const getMember = await this.prisma.member.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        isActive: true,
+        role: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    if (!getMember) {
+      throw new UnauthorizedException('Unauthorized')
+    }
+
+    if (
+      !['Admin', 'Gerente', 'Suporte Técnico'].includes(getMember.role.name)
+    ) {
+      throw new UnauthorizedException('You are not allowed to do this')
+    }
+
     const memberWithSameEmail = await this.prisma.member.findUnique({
-      where: { email },
+      where: {
+        email_restaurantId: {
+          email,
+          restaurantId: payload.restaurantId,
+        },
+      },
     })
 
     if (memberWithSameEmail) {
