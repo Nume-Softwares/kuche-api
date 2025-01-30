@@ -1,14 +1,13 @@
 import {
-  Body,
   Controller,
   Delete,
   HttpCode,
   NotFoundException,
+  Query,
   UnauthorizedException,
 } from '@nestjs/common'
 import {
   ApiBearerAuth,
-  ApiBody,
   ApiOperation,
   ApiProperty,
   ApiResponse,
@@ -20,9 +19,7 @@ import { z } from 'zod'
 import { CurrentRestaurant } from '@/http/modules/current-restaurant.decorator'
 import { TokenPayloadRestaurantSchema } from '../../auth/jwt.strategy'
 
-const deleteMemberRestaurantSchema = z.object({
-  memberId: z.string(),
-})
+const deleteMemberRestaurantSchema = z.string().uuid()
 
 export class DeleteMemberRestaurantDto {
   @ApiProperty({
@@ -36,19 +33,17 @@ type TypeDeleteMemberRestaurantSchema = z.infer<
   typeof deleteMemberRestaurantSchema
 >
 
+const queryValidationPipe = new ZodValidationPipe(deleteMemberRestaurantSchema)
+
 @ApiTags('Membro')
 @ApiBearerAuth('access-token')
-@Controller('/restaurant/members')
+@Controller('/restaurant/member')
 export class DeleteMemberRestaurantController {
   constructor(private prisma: PrismaService) {}
 
   @Delete()
   @HttpCode(204)
   @ApiOperation({ summary: 'Deletar um Membro' })
-  @ApiBody({
-    description: 'Parâmetros necessários para deletar um membro',
-    type: DeleteMemberRestaurantDto,
-  })
   @ApiResponse({
     status: 204,
     description: 'Membro deletado!',
@@ -57,11 +52,9 @@ export class DeleteMemberRestaurantController {
   @ApiResponse({ status: 404, description: 'Categoria não encontrada' })
   async handle(
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
-    @Body(new ZodValidationPipe(deleteMemberRestaurantSchema))
-    body: TypeDeleteMemberRestaurantSchema,
+    @Query('memberId', queryValidationPipe)
+    memberId: TypeDeleteMemberRestaurantSchema,
   ) {
-    const { memberId } = body
-
     const getMember = await this.prisma.member.findUnique({
       where: { id: payload.sub },
       select: {
