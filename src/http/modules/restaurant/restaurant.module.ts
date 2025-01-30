@@ -24,6 +24,9 @@ import { DeleteCategoryRestaurantController } from './controllers/categories/del
 import { DeleteMemberRestaurantController } from './controllers/members/delete-member-restaurant.controller'
 import { DeleteMenuItemRestaurantController } from './controllers/menu-items/delete-menu-item.controller'
 import { CreateMenuItemOptionRestaurantController } from './controllers/menu-item-option/create-menu-option.controller'
+import { UpdateStatusMemberRestaurantController } from './controllers/members/update-status-member-restaurant.controller'
+import { GetMemberIdRestaurantController } from './controllers/members/get-member-id.controller'
+import { UpdateMemberIdRestaurantController } from './controllers/members/update-member-id-restaurant.controller'
 
 @Module({
   imports: [
@@ -66,6 +69,9 @@ import { CreateMenuItemOptionRestaurantController } from './controllers/menu-ite
     UpdateStatusMenuItemRestaurantController,
     DeleteMenuItemRestaurantController,
     CreateMenuItemOptionRestaurantController,
+    UpdateStatusMemberRestaurantController,
+    GetMemberIdRestaurantController,
+    UpdateMemberIdRestaurantController,
   ],
   providers: [
     PrismaService,
