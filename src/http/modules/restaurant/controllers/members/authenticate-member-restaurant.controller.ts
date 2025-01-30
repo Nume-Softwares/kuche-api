@@ -49,7 +49,7 @@ export class AuthenticateMemberDto {
 type AuthenticateRestaurantBody = z.infer<typeof authenticateMemberBodySchema>
 
 @ApiTags('Membro')
-@Controller('/member/sign-in')
+@Controller('/restaurant/member/sign-in')
 @Public()
 export class AuthenticateMemberController {
   constructor(private jwt: JwtService, private prisma: PrismaService) {}
