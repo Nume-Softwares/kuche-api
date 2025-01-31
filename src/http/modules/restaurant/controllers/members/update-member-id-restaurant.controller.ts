@@ -137,7 +137,9 @@ export class UpdateMemberIdRestaurantController {
     }
 
     if (currentPassword && newPassword) {
-      const matchPassword = compare(currentPassword, memberExists.passwordHash)
+      const matchPassword =
+        memberExists.passwordHash &&
+        (await compare(currentPassword, memberExists.passwordHash))
 
       if (!matchPassword) {
         throw new UnauthorizedException('Unauthorized - wrong password')

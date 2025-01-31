@@ -27,6 +27,7 @@ import { CreateMenuItemOptionRestaurantController } from './controllers/menu-ite
 import { UpdateStatusMemberRestaurantController } from './controllers/members/update-status-member-restaurant.controller'
 import { GetMemberIdRestaurantController } from './controllers/members/get-member-id.controller'
 import { UpdateMemberIdRestaurantController } from './controllers/members/update-member-id-restaurant.controller'
+import { AuthenticateMemberGoogleController } from './controllers/members/authenticate-member-google-restaurant.controller'
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { UpdateMemberIdRestaurantController } from './controllers/members/update
     UpdateStatusMemberRestaurantController,
     GetMemberIdRestaurantController,
     UpdateMemberIdRestaurantController,
+    AuthenticateMemberGoogleController,
   ],
   providers: [
     PrismaService,
