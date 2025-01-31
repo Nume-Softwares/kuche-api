@@ -87,7 +87,8 @@ model Member {
   name         String
   email        String
   isActive     Boolean   @default(true)
-  passwordHash String    @map("password_hash")
+  passwordHash String?   @map("password_hash")
+  provider     String?
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime? @updatedAt @map("updated_at")
   roleId       String    @map("role_id")
