@@ -48,12 +48,11 @@ jobs:
           username: ${{ env.VPS_USER }}
           key: ${{ env.SSH_PRIVATE_KEY }}
           port: 22
-          timeout: 120s  # Aumente o timeout para 120 segundos
           script: |
             echo "🔧 Iniciando o processo de deploy..."
             
             # Variáveis
-            APP_DIR="/root/ewertonigor/kuchiapi"  # Verifique o caminho correto para o seu diretório da aplicação
+            APP_DIR="ewertonigor/kuchiapi"  # Verifique o caminho correto para o seu diretório da aplicação
 
             # Verificando Docker e Docker Compose
             echo "🔨 Verificando Docker e Docker Compose..."
