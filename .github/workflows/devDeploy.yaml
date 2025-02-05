@@ -27,19 +27,24 @@ jobs:
       - name: Ajustar permissões da chave SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ env.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      - name: Testar conexão SSH
+      - name: Verificar resolução de DNS
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "echo Conexão SSH bem-sucedida!"
+          nslookup ${{ secrets.VPS_HOST }}
+          ping -c 4 ${{ secrets.VPS_HOST }}
+
+      - name: Testar conexão SSH com debug
+        run: |
+          ssh -vvv -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "echo Conexão SSH bem-sucedida!"
 
       - name: 🚀 Deploy via SSH na VPS
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ env.VPS_HOST }}
-          username: ${{ env.VPS_USER }}
-          key: ${{ env.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
             echo "🔧 Iniciando o processo de deploy..."
