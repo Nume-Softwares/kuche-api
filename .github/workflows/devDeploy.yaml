@@ -49,7 +49,7 @@ jobs:
           key: ${{ env.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            echo "🔧 Iniciando o processo de deploy..."
+            echo "🔧 Iniciando o processo de deploy.."
 
             # Variáveis
             APP_DIR="/root/ewertonigor/kuchiapi"  # Use um caminho absoluto
