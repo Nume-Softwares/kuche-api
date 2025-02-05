@@ -16,6 +16,9 @@ jobs:
       JWT_SECRET_RESTAURANT: ${{ secrets.JWT_SECRET_RESTAURANT }}
       JWT_PRIVATE_KEY_RESTAURANT: ${{ secrets.JWT_PRIVATE_KEY_RESTAURANT }}
       JWT_PUBLIC_KEY_RESTAURANT: ${{ secrets.JWT_PUBLIC_KEY_RESTAURANT }}
+      VPS_HOST: ${{ vars.VPS_HOST }}
+      VPS_USER: ${{ vars.VPS_USER }}
+      SSH_PRIVATE_KEY: ${{ vars.SSH_PRIVATE_KEY }}
 
     steps:
       - name: 🛎️ Checkout do código
@@ -24,9 +27,9 @@ jobs:
       - name: 🚀 Deploy via SSH na VPS
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ env.VPS_HOST }}
+          username: ${{ env.VPS_USER }}
+          private_key: ${{ env.SSH_PRIVATE_KEY }}
           script: |
             # Variáveis
             APP_DIR="/root/ewertonigor/kuchiapi"  # Verifique o caminho correto para o seu diretório da aplicação
