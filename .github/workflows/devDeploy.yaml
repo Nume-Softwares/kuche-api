@@ -70,12 +70,18 @@ jobs:
       - name: 🛎️ Checkout do código
         uses: actions/checkout@v3
 
+      - name: 🧑‍💻 Testando a conexão DNS
+        run: |
+          nslookup ${{ env.VPS_HOST }}
+          ping -c 4 ${{ env.VPS_HOST }}
+
       - name: 🚀 Deploy via SSH na VPS
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ env.VPS_HOST }}
+          host: ${{ env.VPS_HOST }} 
           username: ${{ env.VPS_USER }}
           key: ${{ env.SSH_PRIVATE_KEY }}
+          port: 22
           script: |
             # Variáveis
             APP_DIR="/root/ewertonigor/kuchiapi"  # Verifique o caminho correto para o seu diretório da aplicação
