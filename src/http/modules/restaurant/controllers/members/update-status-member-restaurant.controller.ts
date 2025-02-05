@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   NotFoundException,
+  Param,
   Patch,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -21,17 +22,16 @@ import { CurrentRestaurant } from '@/http/modules/current-restaurant.decorator'
 import { TokenPayloadRestaurantSchema } from '../../auth/jwt.strategy'
 
 const updateStatusMemberRestaurantSchema = z.object({
-  memberId: z.string(),
   isActive: z.boolean(),
 })
 
-export class UpdateStatusMemberRestaurantDto {
-  @ApiProperty({
-    description: 'ID do Membro',
-    example: 'c9ce5fb1-9785-4fae-9011-14403989f1d0',
-  })
-  memberId!: string
+const getMemberIdRestaurantSchema = z.string()
 
+type GetMemberIdRestaurantSchema = z.infer<typeof getMemberIdRestaurantSchema>
+
+const queryValidationPipe = new ZodValidationPipe(getMemberIdRestaurantSchema)
+
+export class UpdateStatusMemberRestaurantDto {
   @ApiProperty({
     description: 'Ativar ou Desativar Membro',
     example: false,
@@ -45,7 +45,7 @@ type TypeUpdateStatusMemberRestaurantSchema = z.infer<
 
 @ApiTags('Membro')
 @ApiBearerAuth('access-token')
-@Controller('/restaurant/members/status')
+@Controller('/restaurant/members/:memberId/status')
 export class UpdateStatusMemberRestaurantController {
   constructor(private prisma: PrismaService) {}
 
@@ -64,10 +64,12 @@ export class UpdateStatusMemberRestaurantController {
   @ApiResponse({ status: 404, description: 'Membro não encontrado' })
   async handle(
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
+    @Param('memberId', queryValidationPipe)
+    memberId: GetMemberIdRestaurantSchema,
     @Body(new ZodValidationPipe(updateStatusMemberRestaurantSchema))
     body: TypeUpdateStatusMemberRestaurantSchema,
   ) {
-    const { memberId, isActive } = body
+    const { isActive } = body
 
     const getMember = await this.prisma.member.findUnique({
       where: { id: payload.sub },

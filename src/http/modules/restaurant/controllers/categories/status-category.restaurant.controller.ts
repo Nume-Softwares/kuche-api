@@ -101,32 +101,35 @@ export class StatusCategoryRestaurantController {
         id: categoryId,
         restaurantId: payload.restaurantId,
       },
+      include: {
+        menuItems: true,
+      },
     })
 
     if (!categoryExists) {
       throw new NotFoundException('Category not found')
     }
 
-    const updatedStatusCategory = await this.prisma.category.update({
-      data: {
-        isActive: isActive,
-      },
-      where: {
-        id: categoryId,
-        restaurantId: payload.restaurantId,
-      },
-      select: {
-        id: true,
-      },
-    })
+    await this.prisma.$transaction([
+      this.prisma.category.update({
+        data: { isActive },
+        where: { id: categoryId, restaurantId: payload.restaurantId },
+      }),
+      this.prisma.menuItem.updateMany({
+        data: { isActive },
+        where: { categoryId },
+      }),
+    ])
 
     await this.prisma.log.create({
       data: {
         event: 'Atualizou o status da categoria',
-        description: '',
+        description: `Categoria e menu items atualizados para ${
+          isActive ? 'ativos' : 'inativos'
+        }`,
         logType: 'UPDATE',
         affectedEntity: 'CATEGORY',
-        affectedId: updatedStatusCategory.id,
+        affectedId: categoryId,
         memberId: payload.sub,
         restaurantId: payload.restaurantId,
       },

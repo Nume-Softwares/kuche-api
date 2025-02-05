@@ -1,0 +1,51 @@
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      SCHEMA: ${{ secrets.SCHEMA }}
+      PORT: ${{ secrets.PORT }}
+      JWT_SECRET_RESTAURANT: ${{ secrets.JWT_SECRET_RESTAURANT }}
+      JWT_PRIVATE_KEY_RESTAURANT: ${{ secrets.JWT_PRIVATE_KEY_RESTAURANT }}
+      JWT_PUBLIC_KEY_RESTAURANT: ${{ secrets.JWT_PUBLIC_KEY_RESTAURANT }}
+
+    steps:
+      - name: 🛎️ Checkout do código
+        uses: actions/checkout@v3
+
+      - name: 🚀 Deploy via SSH na VPS
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Variáveis
+            APP_DIR="/root/ewertonigor/kuchiapi"  # Verifique o caminho correto para o seu diretório da aplicação
+
+            # Verificando Docker e Docker Compose
+            echo "🔨 Verificando Docker e Docker Compose..."
+            docker --version || (echo "Docker não instalado!" && exit 1)
+            docker-compose --version || (echo "Docker Compose não instalado!" && exit 1)
+
+            echo "📁 Verificando diretório..."
+            if [ ! -d "$APP_DIR" ]; then
+              echo "Criando diretório da aplicação..."
+              mkdir -p $APP_DIR
+            fi
+
+            echo "🔄 Atualizando código..."
+            cd $APP_DIR
+            git pull || git clone git@github.com:Nume-Softwares/kuche-api.git .  # Substitua com seu repositório correto
+
+            # Rodando o build do NestJS
+            echo "🔨 Instalando dependências e compilando a aplicação NestJS..."
+            npm ci  # Garantir que as dependências sejam instaladas de maneira limpa
+            npm run build  # Compilando o código TypeScript para JavaScript
+
+            echo "🐳 Subindo containers..."
+            docker-compose down  # Parando containers antigos
+            docker-compose up -d --build  # Reconstruindo e subindo os containers
+
+            echo "✅ Deploy finalizado!"

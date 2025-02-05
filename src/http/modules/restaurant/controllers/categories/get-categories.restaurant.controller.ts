@@ -22,6 +22,12 @@ type PageQueryParamSchema = z.infer<typeof pageQueryParamSchema>
 
 const queryValidationPipe = new ZodValidationPipe(pageQueryParamSchema)
 
+const searchQueryParamSchema = z.string().optional().default('')
+
+const searchValidationPipe = new ZodValidationPipe(searchQueryParamSchema)
+
+type SearchQueryParamSchema = z.infer<typeof searchQueryParamSchema>
+
 @ApiTags('Categorias')
 @ApiBearerAuth('access-token')
 @Controller('/restaurant/categories')
@@ -39,12 +45,16 @@ export class GetCategoriesRestaurantController {
   async handle(
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
     @Query('page', queryValidationPipe) page: PageQueryParamSchema,
+    @Query('search', searchValidationPipe) search: SearchQueryParamSchema,
   ) {
     const perPage = 8
 
     const totalCategories = await this.prisma.category.count({
       where: {
         restaurantId: payload.restaurantId,
+        OR: search
+          ? [{ name: { contains: search, mode: 'insensitive' } }]
+          : undefined,
       },
     })
 
@@ -59,6 +69,9 @@ export class GetCategoriesRestaurantController {
       skip: (page - 1) * perPage,
       where: {
         restaurantId: payload.restaurantId,
+        OR: search
+          ? [{ name: { contains: search, mode: 'insensitive' } }]
+          : undefined,
       },
       select: {
         id: true,
@@ -72,6 +85,13 @@ export class GetCategoriesRestaurantController {
       },
     })
 
-    return { members: getCategories, totalPages }
+    const formattedCategories = getCategories.map(
+      ({ _count, ...category }) => ({
+        ...category,
+        totalMenuItems: _count.menuItems,
+      }),
+    )
+
+    return { categories: formattedCategories, totalPages }
   }
 }

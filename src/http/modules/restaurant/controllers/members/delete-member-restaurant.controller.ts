@@ -3,7 +3,7 @@ import {
   Delete,
   HttpCode,
   NotFoundException,
-  Query,
+  Param,
   UnauthorizedException,
 } from '@nestjs/common'
 import {
@@ -41,7 +41,7 @@ const queryValidationPipe = new ZodValidationPipe(deleteMemberRestaurantSchema)
 export class DeleteMemberRestaurantController {
   constructor(private prisma: PrismaService) {}
 
-  @Delete()
+  @Delete(':memberId')
   @HttpCode(204)
   @ApiOperation({ summary: 'Deletar um Membro' })
   @ApiResponse({
@@ -52,7 +52,7 @@ export class DeleteMemberRestaurantController {
   @ApiResponse({ status: 404, description: 'Categoria não encontrada' })
   async handle(
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
-    @Query('memberId', queryValidationPipe)
+    @Param('memberId', queryValidationPipe)
     memberId: TypeDeleteMemberRestaurantSchema,
   ) {
     const getMember = await this.prisma.member.findUnique({

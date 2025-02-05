@@ -28,6 +28,7 @@ import { UpdateStatusMemberRestaurantController } from './controllers/members/up
 import { GetMemberIdRestaurantController } from './controllers/members/get-member-id.controller'
 import { UpdateMemberIdRestaurantController } from './controllers/members/update-member-id-restaurant.controller'
 import { AuthenticateMemberGoogleController } from './controllers/members/authenticate-member-google-restaurant.controller'
+import { GetCategoryIdRestaurantController } from './controllers/categories/get-category-id.restaurant.controller'
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { AuthenticateMemberGoogleController } from './controllers/members/authen
     GetMemberIdRestaurantController,
     UpdateMemberIdRestaurantController,
     AuthenticateMemberGoogleController,
+    GetCategoryIdRestaurantController,
   ],
   providers: [
     PrismaService,

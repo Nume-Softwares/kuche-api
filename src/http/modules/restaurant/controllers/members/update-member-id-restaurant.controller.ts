@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   NotFoundException,
+  Param,
   Patch,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -22,21 +23,17 @@ import { TokenPayloadRestaurantSchema } from '../../auth/jwt.strategy'
 import { compare, hash } from 'bcryptjs'
 
 const updateMemberIdRestaurantSchema = z.object({
-  memberId: z.string().uuid(),
   name: z.string(),
   email: z.string().email(),
   currentPassword: z.string().optional(),
   newPassword: z.string().optional(),
-  roleId: z.string().uuid(),
+  roleId: z.string(),
 })
 
-export class UpdateMemberIdRestaurantDto {
-  @ApiProperty({
-    description: 'ID do Membro',
-    example: 'c9ce5fb1-9785-4fae-9011-14403989f1d0',
-  })
-  memberId!: string
+const getMemberIdRestaurantSchema = z.string()
 
+type GetMemberIdRestaurantSchema = z.infer<typeof getMemberIdRestaurantSchema>
+export class UpdateMemberIdRestaurantDto {
   @ApiProperty({
     description: 'Nome do Membro',
     example: 'Ewerton Igor',
@@ -78,7 +75,7 @@ type TypeUpdateMemberIdRestaurantSchema = z.infer<
 export class UpdateMemberIdRestaurantController {
   constructor(private prisma: PrismaService) {}
 
-  @Patch()
+  @Patch(':memberId')
   @HttpCode(204)
   @ApiOperation({ summary: 'Atualiza o Membro' })
   @ApiBody({
@@ -93,10 +90,12 @@ export class UpdateMemberIdRestaurantController {
   @ApiResponse({ status: 404, description: 'Membro não encontrado' })
   async handle(
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
+    @Param('memberId')
+    memberId: GetMemberIdRestaurantSchema,
     @Body(new ZodValidationPipe(updateMemberIdRestaurantSchema))
     body: TypeUpdateMemberIdRestaurantSchema,
   ) {
-    const { memberId, name, currentPassword, newPassword, roleId, email } = body
+    const { name, currentPassword, newPassword, roleId, email } = body
 
     const getMember = await this.prisma.member.findUnique({
       where: { id: payload.sub },
@@ -152,10 +151,22 @@ export class UpdateMemberIdRestaurantController {
           passwordHash: hashedPassword,
         },
         where: {
-          id: memberId,
+          id: memberExists.id,
           restaurantId: payload.restaurantId,
         },
       })
+    }
+
+    const existingEmail = await this.prisma.member.findFirst({
+      where: {
+        email,
+        restaurantId: payload.restaurantId,
+        id: { not: memberId },
+      },
+    })
+
+    if (existingEmail) {
+      throw new UnauthorizedException('Email already in use by another member')
     }
 
     const updateMember = await this.prisma.member.update({
