@@ -19,6 +19,7 @@ jobs:
       VPS_HOST: srv716497.hstgr.cloud  # Substitua pelo seu hostname
       VPS_USER: root  # Substitua pelo seu usuário SSH
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
 
     steps:
       - name: 🛎️ Checkout do código
@@ -29,6 +30,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+
+      - name: Adicionar chave do host ao known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ env.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
 
       - name: Testar conexão SSH com debug
         run: |
