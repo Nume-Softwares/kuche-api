@@ -24,6 +24,11 @@ jobs:
       - name: 🛎️ Checkout do código
         uses: actions/checkout@v3
 
+      - name: 🧑‍💻 Testando a conexão SSH
+        run: |
+          echo "🔍 Testando a conexão SSH..."
+          ssh -v -i ~/.ssh/id_rsa root@${{ secrets.VPS_HOST }} "echo 'Conexão SSH bem-sucedida!'"
+
       - name: 🧑‍💻 Testando a conexão DNS
         run: |
           nslookup ${{ env.VPS_HOST }}
