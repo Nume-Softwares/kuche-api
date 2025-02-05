@@ -48,7 +48,7 @@ jobs:
           username: ${{ env.VPS_USER }}
           key: ${{ env.SSH_PRIVATE_KEY }}
           port: 22
-          timeout: 60s  # Aumente o timeout para 60 segundos
+          timeout: 120s  # Aumente o timeout para 120 segundos
           script: |
             echo "🔧 Iniciando o processo de deploy..."
             
