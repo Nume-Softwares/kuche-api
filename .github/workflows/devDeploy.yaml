@@ -16,23 +16,23 @@ jobs:
       JWT_SECRET_RESTAURANT: ${{ secrets.JWT_SECRET_RESTAURANT }}
       JWT_PRIVATE_KEY_RESTAURANT: ${{ secrets.JWT_PRIVATE_KEY_RESTAURANT }}
       JWT_PUBLIC_KEY_RESTAURANT: ${{ secrets.JWT_PUBLIC_KEY_RESTAURANT }}
-      VPS_HOST: ${{ vars.VPS_HOST }}
-      VPS_USER: ${{ vars.VPS_USER }}
-      SSH_PRIVATE_KEY: ${{ vars.SSH_PRIVATE_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
     steps:
       - name: 🛎️ Checkout do código
         uses: actions/checkout@v3
 
-      - name: 🧑‍💻 Testando a conexão SSH
+      - name: Ajustar permissões da chave SSH
         run: |
-          echo "🔍 Testando a conexão SSH..."
-          ssh -v -i ~/.ssh/id_rsa root@${{ vars.VPS_HOST }} "echo 'Conexão SSH bem-sucedida!'"
+          mkdir -p ~/.ssh
+          echo "${{ env.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-      - name: 🧑‍💻 Testando a conexão DNS
+      - name: Testar conexão SSH
         run: |
-          nslookup ${{ env.VPS_HOST }}
-          ping -c 4 ${{ env.VPS_HOST }}
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "echo Conexão SSH bem-sucedida!"
 
       - name: 🚀 Deploy via SSH na VPS
         uses: appleboy/ssh-action@v0.1.7
@@ -40,55 +40,10 @@ jobs:
           host: ${{ env.VPS_HOST }}
           username: ${{ env.VPS_USER }}
           key: ${{ env.SSH_PRIVATE_KEY }}
-          port: 22  # Confirmando que a porta é 22 para SSH
+          port: 22
           script: |
             echo "🔧 Iniciando o processo de deploy..."
             
-            # Variáveis
-            APP_DIR="/root/ewertonigor/kuchiapi"  # Verifique o caminho correto para o seu diretório da aplicação
-
-            # Verificando Docker e Docker Compose
-            echo "🔨 Verificando Docker e Docker Compose..."
-            docker --version || (echo "Docker não instalado!" && exit 1)
-            docker-compose --version || (echo "Docker Compose não instalado!" && exit 1)
-
-            echo "📁 Verificando diretório..."
-            if [ ! -d "$APP_DIR" ]; then
-              echo "Criando diretório da aplicação..."
-              mkdir -p $APP_DIR
-            fi
-
-            echo "🔄 Atualizando código..."
-            cd $APP_DIR
-            git pull || git clone git@github.com:Nume-Softwares/kuche-api.git .  # Substitua com seu repositório correto
-
-            # Rodando o build do NestJS
-            echo "🔨 Instalando dependências e compilando a aplicação NestJS..."
-            npm ci  # Garantir que as dependências sejam instaladas de maneira limpa
-            npm run build  # Compilando o código TypeScript para JavaScript
-
-            echo "🐳 Subindo containers..."
-            docker-compose down  # Parando containers antigos
-            docker-compose up -d --build  # Reconstruindo e subindo os containers
-
-            echo "✅ Deploy finalizado!"
-
-      - name: 🛠️ Debugging SSH Connection
-        run: |
-          echo "🔍 Debugando a conexão SSH..."
-          ssh -vvv -i ~/.ssh/id_rsa root@${{ secrets.VPS_HOST }} "echo Conexão SSH bem-sucedida!"
-      
-      - name: 🛎️ Checkout do código
-        uses: actions/checkout@v3
-
-      - name: 🚀 Deploy via SSH na VPS
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ env.VPS_HOST }} 
-          username: ${{ env.VPS_USER }}
-          key: ${{ env.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
             # Variáveis
             APP_DIR="/root/ewertonigor/kuchiapi"  # Verifique o caminho correto para o seu diretório da aplicação
 
