@@ -24,6 +24,11 @@ jobs:
       - name: 🛎️ Checkout do código
         uses: actions/checkout@v3
 
+      - name: 🧑‍💻 Testando a conexão DNS
+        run: |
+          nslookup ${{ env.VPS_HOST }}
+          ping -c 4 ${{ env.VPS_HOST }}
+
       - name: 🚀 Deploy via SSH na VPS
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -67,13 +72,9 @@ jobs:
         run: |
           echo "🔍 Debugando a conexão SSH..."
           ssh -vvv -i ~/.ssh/id_rsa root@${{ secrets.VPS_HOST }} "echo Conexão SSH bem-sucedida!"
+      
       - name: 🛎️ Checkout do código
         uses: actions/checkout@v3
-
-      - name: 🧑‍💻 Testando a conexão DNS
-        run: |
-          nslookup ${{ env.VPS_HOST }}
-          ping -c 4 ${{ env.VPS_HOST }}
 
       - name: 🚀 Deploy via SSH na VPS
         uses: appleboy/ssh-action@v0.1.7
