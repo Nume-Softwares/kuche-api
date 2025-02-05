@@ -30,13 +30,9 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      - name: Verificar resolução de DNS
+      - name: Testar conexão SSH com debug
         run: |
-          nslookup ${{ env.VPS_HOST }}
-
-      - name: Testar conexão SSH
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "echo Conexão SSH bem-sucedida!"
+          ssh -vvv -i ~/.ssh/id_rsa ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "echo Conexão SSH bem-sucedida!"
 
       - name: 🚀 Deploy via SSH na VPS
         uses: appleboy/ssh-action@v0.1.7
@@ -45,6 +41,7 @@ jobs:
           username: ${{ env.VPS_USER }}
           key: ${{ env.SSH_PRIVATE_KEY }}
           port: 22
+          timeout: 60s  # Aumente o timeout para 60 segundos
           script: |
             echo "🔧 Iniciando o processo de deploy..."
             
