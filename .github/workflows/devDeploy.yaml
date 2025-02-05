@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: 🛎️ Checkout do código
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Ajustar permissões da chave SSH
         run: |
@@ -49,82 +49,18 @@ jobs:
           key: ${{ env.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            echo "🔧 Iniciando o processo de deploy.."
-
-            # Variáveis
-            APP_DIR="/root/ewertonigor/kuchiapi"  # Use um caminho absoluto
-
-            # Verificando Docker e Docker Compose
-            echo "🔨 Verificando Docker e Docker Compose..."
-            docker --version || (echo "Docker não instalado!" && exit 1)
-            docker-compose --version || docker compose version || (echo "Docker Compose não instalado!" && exit 1)
-
-            echo "📁 Verificando diretório..."
-            if [ ! -d "$APP_DIR" ]; then
-              echo "Criando diretório da aplicação..."
-              mkdir -p $APP_DIR
-            fi
-
-            echo "🔄 Atualizando código..."
-            cd $APP_DIR
-            if [ ! -d ".git" ]; then
-              echo "Repositório não encontrado. Clonando..."
-              git clone https://github.com/Nume-Softwares/kuche-api.git .
-            else
-              echo "Repositório encontrado. Fazendo pull..."
-              git pull origin main
-            fi
-
-            # Rodando o build do NestJS
-            if [ -f "package.json" ]; then
-              echo "🔨 Instalando dependências e compilando a aplicação..."
-              npm ci
-              npm run build
-            else
-              echo "❌ ERRO: Arquivo package.json não encontrado!"
-              exit 1
-            fi
-
-            echo "🐳 Subindo containers..."
-            docker-compose down || docker compose down
-            docker-compose up -d --build || docker compose up -d --build
-
-            echo "✅ Deploy finalizado!"
-
               uses: appleboy/ssh-action@v0.1.7
               with:
                 host: ${{ env.VPS_HOST }}
                 username: ${{ env.VPS_USER }}
                 key: ${{ env.SSH_PRIVATE_KEY }}
                 port: 22
-                script: |
-                  echo "🔧 Iniciando o processo de deploy..."
-                  
-                  # Variáveis
-                  APP_DIR="/root/ewertonigor/kuchiapi"  # Verifique o caminho correto para o seu diretório da aplicação
-
-                  # Verificando Docker e Docker Compose
-                  echo "🔨 Verificando Docker e Docker Compose..."
-                  docker --version || (echo "Docker não instalado!" && exit 1)
-                  docker-compose --version || (echo "Docker Compose não instalado!" && exit 1)
-
-                  echo "📁 Verificando diretório..."
-                  if [ ! -d "$APP_DIR" ]; then
-                    echo "Criando diretório da aplicação..."
-                    mkdir -p $APP_DIR
-                  fi
-
-                  echo "🔄 Atualizando código..."
-                  cd $APP_DIR
-                  git pull || git clone git@github.com:Nume-Softwares/kuche-api.git .  # Substitua com seu repositório correto
-
-                  # Rodando o build do NestJS
-                  echo "🔨 Instalando dependências e compilando a aplicação NestJS..."
-                  npm ci  # Garantir que as dependências sejam instaladas de maneira limpa
-                  npm run build  # Compilando o código TypeScript para JavaScript
-
-                  echo "🐳 Subindo containers..."
-                  docker-compose down  # Parando containers antigos
-                  docker-compose up -d --build  # Reconstruindo e subindo os containers
+                script: |                 
+                  cd /ewertonigor/kuchiapi
+                  git clone git@github.com:Nume-Softwares/kuche-api.git .
+                  pnpm i 
+                  pnpm run start:prod
+                  docker-compose down  
+                  docker-compose up -d --build 
 
                   echo "✅ Deploy finalizado!"
