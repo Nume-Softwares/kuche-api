@@ -12,6 +12,11 @@ jobs:
       - name: 🛎️ Checkout do código
         uses: actions/checkout@v4
 
+      - name: Verificar conteúdo da pasta
+        run: |
+          ls -l ./  # Verifique se há arquivos no diretório atual
+
+
       - name: 🚀 Copiar arquivos para VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
