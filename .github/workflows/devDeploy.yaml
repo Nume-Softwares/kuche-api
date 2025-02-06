@@ -23,8 +23,8 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./"
-          target: "/root/ewertonigor/kuchiapi"
+          source: "."
+          target: "ewertonigor/kuchiapi"
 
       - name: 📂 Verificar arquivos na VPS
         uses: appleboy/scp-action@v0.1.7
