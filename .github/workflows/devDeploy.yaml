@@ -20,6 +20,15 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
           target: "/root/ewertonigor/kuchiapi"
+        
+      - name: 📂 Verificar arquivos na VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            ls -l /root/ewertonigor/kuchiapi
 
       - name: 🌟 Build e Restart da Aplicação via Docker
         uses: appleboy/ssh-action@v1.0.3
