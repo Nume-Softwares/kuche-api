@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: 🛎️ Checkout do código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Ajustar permissões da chave SSH
         run: |
@@ -48,7 +48,7 @@ jobs:
           username: ${{ env.VPS_USER }}
           key: ${{ env.SSH_PRIVATE_KEY }}
           port: 22
-          timeout: 120s  # Aumente o timeout para 120 segundos
+          timeout: 300s  # Aumente o timeout para 300 segundos
           script: |
             echo "🔧 Iniciando o processo de deploy..."
 
@@ -72,8 +72,10 @@ jobs:
             echo "🔄 Atualizando código..."
             cd $APP_DIR
             if [ -d .git ]; then
+              echo "Atualizando repositório existente..."
               git pull origin main || (echo "Falha ao atualizar o repositório!" && exit 1)
             else
+              echo "Clonando repositório..."
               git clone $REPO_URL . || (echo "Falha ao clonar o repositório!" && exit 1)
             fi
 
