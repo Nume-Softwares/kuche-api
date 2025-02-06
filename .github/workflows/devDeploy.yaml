@@ -19,7 +19,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
-          target: "/root/ewertonigor/kuchiapi/"
+          target: "/ewertonigor/kuchiapi"
 
       - name: 🌟 Build da Aplicação
         uses: appleboy/ssh-action@v1.0.3
@@ -28,6 +28,6 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /ewertonigor/kuchiapi
+            cd ewertonigor/kuchiapi
             pnpm install
             
