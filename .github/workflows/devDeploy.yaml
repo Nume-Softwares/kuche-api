@@ -18,7 +18,7 @@ jobs:
 
 
       - name: 🚀 Copiar arquivos para VPS
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -27,7 +27,7 @@ jobs:
           target: "ewertonigor/kuchiapi"
 
       - name: 📂 Verificar arquivos na VPS
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
