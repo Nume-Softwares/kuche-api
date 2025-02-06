@@ -19,7 +19,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
-          target: "/ewertonigor/kuchiapi"
+          target: "ewertonigor/kuchiapi"
 
       - name: 🌟 Build da Aplicação
         uses: appleboy/ssh-action@v1.0.3
