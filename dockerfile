@@ -16,6 +16,9 @@ RUN pnpm install
 # Copie o restante do código para dentro do container
 COPY . .
 
+# Rodar a migração do Prisma
+RUN pnpm prisma migrate dev
+
 # Compile o código do NestJS (se necessário)
 RUN pnpm run build
 

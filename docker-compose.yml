@@ -14,13 +14,13 @@ services:
       - ./data/pg:/data/postgres
 
   nestjs-app:
-    build:
-      context: . 
+    build: 
+      context: .  # Usando o Dockerfile para a construção
     container_name: kuchi-backend
     ports:
-      - "3333:3333" 
+      - "3333:3333"
     depends_on:
-      - postgres  
+      - postgres
     environment:
       - DATABASE_HOST=postgres
       - DATABASE_PORT=5432
@@ -29,5 +29,6 @@ services:
       - DATABASE_NAME=nume-api
     volumes:
       - .:/app
-    command: npm run start:prod
+    command: |
+      bash -c "pnpm prisma migrate dev && pnpm run start:prod"  # Rodar a migração antes de iniciar o app
     restart: always
