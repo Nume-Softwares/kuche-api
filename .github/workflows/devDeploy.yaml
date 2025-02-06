@@ -45,16 +45,16 @@ jobs:
           script: |
             cd ewertonigor/kuchiapi
 
-            echo "DATABASE_URL="${{ secrets.DATABASE_URL }}"" >> .env
-            echo "DIRECT_URL="${{ secrets.DIRECT_URL }}"" >> .env
-            echo "JWT_SECRET_RESTAURANT="${{ secrets.JWT_SECRET_RESTAURANT }}"" >> .env
-            echo "JWT_PRIVATE_KEY_RESTAURANT="${{ secrets.JWT_PRIVATE_KEY_RESTAURANT }}"" >> .env
-            echo "JWT_PUBLIC_KEY_RESTAURANT="${{ secrets.JWT_PUBLIC_KEY_RESTAURANT }}"" >> .env
-            echo "SCHEMA="${{ secrets.SCHEMA }}"" >> .env
-            echo "PORT="${{ secrets.PORT }}"" >> .env
-            echo "PORT_DEV="${{ secrets.PORT_DEV }}"" >> .env
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+            echo "DIRECT_URL=${{ secrets.DIRECT_URL }}" >> .env
+            echo "JWT_SECRET_RESTAURANT=${{ secrets.JWT_SECRET_RESTAURANT }}" >> .env
+            echo "JWT_PRIVATE_KEY_RESTAURANT=${{ secrets.JWT_PRIVATE_KEY_RESTAURANT }}" >> .env
+            echo "JWT_PUBLIC_KEY_RESTAURANT=${{ secrets.JWT_PUBLIC_KEY_RESTAURANT }}" >> .env
+            echo "SCHEMA=${{ secrets.SCHEMA }}" >> .env
+            echo "PORT=${{ secrets.PORT }}" >> .env
+            echo "PORT_DEV=${{ secrets.PORT_DEV }}" >> .env
 
             docker-compose down  
             docker-compose build  
-            docker-compose up -d 
+            docker-compose up -d
             docker ps
