@@ -7,48 +7,27 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      DIRECT_URL: ${{ secrets.DIRECT_URL }}
-      SCHEMA: ${{ secrets.SCHEMA }}
-      PORT: ${{ secrets.PORT }}
-      JWT_SECRET_RESTAURANT: ${{ secrets.JWT_SECRET_RESTAURANT }}
-      JWT_PRIVATE_KEY_RESTAURANT: ${{ secrets.JWT_PRIVATE_KEY_RESTAURANT }}
-      JWT_PUBLIC_KEY_RESTAURANT: ${{ secrets.JWT_PUBLIC_KEY_RESTAURANT }}
-      VPS_HOST: srv716497.hstgr.cloud 
-      VPS_USER: root  
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
 
     steps:
       - name: 🛎️ Checkout do código
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Ajustar permissões da chave SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-      - name: Adicionar chave do host ao known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ env.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-
-      - name: Testar conexão SSH com debug
-        run: |
-          ssh -vvv -i ~/.ssh/id_rsa ${{ env.VPS_USER }}@${{ env.VPS_HOST }} "echo Conexão SSH bem-sucedida!"
-
-      - name: 🚀 Deploy via SSH na VPS
+      - name: 🚀 Copiar arquivos para VPS
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ env.VPS_HOST }}
-          username: ${{ env.VPS_USER }}
-          key: ${{ env.SSH_PRIVATE_KEY }}
-          port: 22
-          timeout: 300s  # Aumente o timeout para 300 segundos
-          script: |
-            echo "🔧 Iniciando o processo de deploy..."
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "."
+          target: "/ewertonigor/kuchiapi"
 
-            mkdir passouaqui
+      - name: 🌟 Build da Aplicação
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /ewertonigor/kuchiapi
+            pnpm install
+            
