@@ -1,5 +1,4 @@
 name: Deploy KuchiAPI to VPS
-
 on:
   push:
     branches:
@@ -16,8 +15,8 @@ jobs:
       JWT_SECRET_RESTAURANT: ${{ secrets.JWT_SECRET_RESTAURANT }}
       JWT_PRIVATE_KEY_RESTAURANT: ${{ secrets.JWT_PRIVATE_KEY_RESTAURANT }}
       JWT_PUBLIC_KEY_RESTAURANT: ${{ secrets.JWT_PUBLIC_KEY_RESTAURANT }}
-      VPS_HOST: srv716497.hstgr.cloud  # Substitua pelo seu hostname
-      VPS_USER: root  # Substitua pelo seu usuário SSH
+      VPS_HOST: srv716497.hstgr.cloud 
+      VPS_USER: root  
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
 
@@ -52,41 +51,4 @@ jobs:
           script: |
             echo "🔧 Iniciando o processo de deploy..."
 
-            # Variáveis
-            APP_DIR="/home/ewertonigor/kuchiapi"  # Diretório recomendado (não use /root)
-            REPO_URL="git@github.com:Nume-Softwares/kuche-api.git"  # URL do repositório
-
-            # Verificando Docker e Docker Compose
-            echo "🔨 Verificando Docker e Docker Compose..."
-            docker --version || (echo "Docker não instalado!" && exit 1)
-            docker compose version || (echo "Docker Compose não instalado!" && exit 1)
-
-            # Verificando e criando o diretório da aplicação
-            echo "📁 Verificando diretório..."
-            if [ ! -d "$APP_DIR" ]; then
-              echo "Criando diretório da aplicação..."
-              mkdir -p $APP_DIR
-            fi
-
-            # Atualizando ou clonando o repositório
-            echo "🔄 Atualizando código..."
-            cd $APP_DIR
-            if [ -d .git ]; then
-              echo "Atualizando repositório existente..."
-              git pull origin main || (echo "Falha ao atualizar o repositório!" && exit 1)
-            else
-              echo "Clonando repositório..."
-              git clone $REPO_URL . || (echo "Falha ao clonar o repositório!" && exit 1)
-            fi
-
-            # Instalando dependências e compilando a aplicação NestJS
-            echo "🔨 Instalando dependências e compilando a aplicação NestJS..."
-            npm ci || (echo "Falha ao instalar dependências!" && exit 1)
-            npm run build || (echo "Falha ao compilar o projeto!" && exit 1)
-
-            # Subindo os containers com Docker Compose
-            echo "🐳 Subindo containers..."
-            docker compose down || (echo "Falha ao parar containers antigos!" && exit 1)
-            docker compose up -d --build || (echo "Falha ao subir os containers!" && exit 1)
-
-            echo "✅ Deploy finalizado!"
+            mkdir passouaqui
