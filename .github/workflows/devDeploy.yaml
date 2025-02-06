@@ -21,13 +21,15 @@ jobs:
           source: "."
           target: "/ewertonigor/kuchiapi"
 
-      - name: 🌟 Build da Aplicação
+      - name: 🌟 Build e Restart da Aplicação via Docker
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ewertonigor/kuchiapi
-            pnpm install
-            
+            cd /ewertonigor/kuchiapi
+            docker-compose down  
+            docker-compose build  
+            docker-compose up -d  
+            docker ps 
