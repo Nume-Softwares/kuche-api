@@ -44,6 +44,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ewertonigor/kuchiapi
+            
+            sudo rm -rf .env
 
             echo "DATABASE_URL=\"${{ secrets.DATABASE_URL }}\"" > .env
             echo "DIRECT_URL=\"${{ secrets.DIRECT_URL }}\"" >> .env
