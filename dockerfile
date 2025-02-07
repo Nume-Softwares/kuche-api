@@ -10,13 +10,13 @@ WORKDIR /app
 # Copie o package.json e o pnpm-lock.yaml para instalar as dependências
 COPY package.json pnpm-lock.yaml ./
 
-# Instale as dependências com pnpm
-RUN pnpm install
+# Instale as dependências com pnpm (modo travado para evitar problemas)
+RUN pnpm install --frozen-lockfile
 
 # Copie o restante do código para dentro do container
 COPY . .
 
-# Rodar a migração do Prisma
+# Gerar o Prisma Client antes de rodar as migrações
 RUN pnpm prisma generate
 
 # Compile o código do NestJS (se necessário)
@@ -25,7 +25,7 @@ RUN pnpm run build
 # Etapa 2: Imagem de produção (usando a imagem slim para reduzir o tamanho)
 FROM node:22.9.0-slim
 
-# Instalar pnpm novamente na imagem de produção (caso seja necessário)
+# Instalar pnpm novamente na imagem de produção (caso seja necessário) e netcat
 RUN npm install -g pnpm && apt-get update && apt-get install -y netcat-openbsd
 
 # Defina o diretório de trabalho

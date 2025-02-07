@@ -32,6 +32,7 @@ services:
       - .:/app
     command: |
       bash -c "
+      export PATH=./node_modules/.bin:$PATH;
       until nc -z -v -w30 postgres 5432; do
         echo 'Esperando PostgreSQL...';
         sleep 1;
