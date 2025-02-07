@@ -26,7 +26,7 @@ RUN pnpm run build
 FROM node:22.9.0-slim
 
 # Instalar pnpm novamente na imagem de produção (caso seja necessário)
-RUN npm install -g pnpm
+RUN npm install -g pnpm && sudo apt-get install -y netcat
 
 # Defina o diretório de trabalho
 WORKDIR /app
