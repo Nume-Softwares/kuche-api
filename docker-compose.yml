@@ -36,5 +36,5 @@ services:
         sleep 1;
       done;
       echo 'PostgreSQL está pronto!';
-      pnpm prisma migrate dev && pnpm run start:prod"
-    restart: always
+      pnpm prisma migrate deploy && pnpm run start:prod"
+  restart: always

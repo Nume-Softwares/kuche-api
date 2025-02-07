@@ -17,7 +17,7 @@ RUN pnpm install
 COPY . .
 
 # Rodar a migração do Prisma
-RUN pnpm prisma migrate dev
+RUN pnpm prisma generate
 
 # Compile o código do NestJS (se necessário)
 RUN pnpm run build
@@ -36,6 +36,3 @@ COPY --from=build /app /app
 
 # Exponha a porta para acessar a aplicação
 EXPOSE 3333
-
-# Comando para rodar a aplicação em produção
-CMD ["pnpm", "run", "start:prod"]
