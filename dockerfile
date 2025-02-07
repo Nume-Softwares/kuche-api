@@ -1,4 +1,4 @@
-# Etapa 1: Use a imagem oficial do Node.js 22.9.0 como base
+# Etapa 1: Use a imagem oficial do Node.js como base
 FROM node:22.9.0 AS build
 
 # Instalar pnpm globalmente
@@ -16,7 +16,7 @@ RUN pnpm install --frozen-lockfile
 # Copie o restante do código para dentro do container
 COPY . .
 
-# Gerar o Prisma Client antes de rodar as migrações
+# Gerar o Prisma Client antes de rodar as migrações ou outras operações
 RUN pnpm prisma generate
 
 # Compile o código do NestJS (se necessário)
