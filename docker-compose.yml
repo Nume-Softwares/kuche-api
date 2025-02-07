@@ -12,6 +12,7 @@ services:
       PGDATA: /data/postgres
     volumes:
       - ./data/pg:/data/postgres
+    restart: always  
 
   nestjs-app:
     build:
@@ -37,4 +38,4 @@ services:
       done;
       echo 'PostgreSQL está pronto!';
       pnpm prisma migrate deploy && pnpm run start:prod"
-  restart: always
+    restart: always 
