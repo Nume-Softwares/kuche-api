@@ -3,7 +3,7 @@ version: "3.8"
 services:
   postgres:
     container_name: kuchi-db
-    image: postgres:13
+    image: postgres:13  # Especificar uma versão para evitar problemas com versões não compatíveis
     ports:
       - "5432:5432"
     environment:
@@ -15,7 +15,7 @@ services:
       - ./data/pg:/data/postgres
     restart: always  
     networks:
-      - app-network
+      - app-network  # Garantir que o PostgreSQL use a mesma rede
 
   nestjs-app:
     build:
@@ -33,10 +33,19 @@ services:
       - DATABASE_NAME=kuchi-db
     volumes:
       - .:/app  # Mapear o código-fonte local para dentro do contêiner
+    command: |
+      bash -c "
+      export PATH=./node_modules/.bin:$PATH;
+      until nc -z -v -w30 postgres 5432; do
+        echo 'Esperando PostgreSQL...';
+        sleep 1;
+      done;
+      echo 'PostgreSQL está pronto!';
+      pnpm install && pnpm prisma generate && pnpm run start:prod"  # Executando os comandos necessários
     restart: always
     networks:
-      - app-network
+      - app-network  # Garantir que o NestJS use a mesma rede do PostgreSQL
 
 networks:
   app-network:
-    driver: bridge
+    driver: bridge  # Rede compartilhada entre o PostgreSQL e o NestJS
