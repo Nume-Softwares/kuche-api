@@ -26,7 +26,7 @@ RUN pnpm run build
 FROM node:22.9.0-slim
 
 # Instalar pnpm novamente na imagem de produção (caso seja necessário) e netcat
-RUN npm install -g pnpm && apt-get update && apt-get install -y netcat-openbsd
+RUN npm install -g pnpm && apt-get update && apt-get install -y netcat-openbsd apt-get install -y openssl
 
 # Defina o diretório de trabalho
 WORKDIR /app
