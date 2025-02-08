@@ -13,7 +13,7 @@ COPY package.json pnpm-lock.yaml ./
 # Instalar dependências
 RUN pnpm install --frozen-lockfile
 
-# Copiar o restante do código
+# Copiar o restante do código.
 COPY . .
 
 # Gerar o Prisma Client
