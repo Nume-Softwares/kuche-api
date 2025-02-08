@@ -19,6 +19,9 @@ COPY . .
 # Gerar o Prisma Client antes de rodar as migrações ou outras operações
 RUN pnpm prisma generate
 
+# Compilar o código TypeScript
+RUN pnpm run build
+
 # Etapa 2: Imagem de produção (usando a imagem slim para reduzir o tamanho)
 FROM node:22.9.0-slim
 
@@ -30,9 +33,6 @@ WORKDIR /app
 
 # Copie as dependências instaladas e o código compilado da fase anterior
 COPY --from=build /app /app
-
-# Compile o código do NestJS (se necessário)
-RUN pnpm run build
 
 # Exponha a porta para acessar a aplicação
 EXPOSE 3333
