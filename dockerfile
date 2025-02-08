@@ -1,39 +1,40 @@
-# Etapa 1: Use a imagem oficial do Node.js como base
+# Etapa 1: Build
 FROM node:22.9.0 AS build
 
 # Instalar pnpm globalmente
 RUN npm install -g pnpm
 
-# Defina o diretório de trabalho no container
+# Definir diretório de trabalho
 WORKDIR /app
 
-# Copie apenas os arquivos necessários para instalar as dependências
+# Copiar arquivos de dependências
 COPY package.json pnpm-lock.yaml ./
 
-# Instale as dependências com pnpm (modo travado para evitar problemas)
+# Instalar dependências
 RUN pnpm install --frozen-lockfile
 
-# Copie o restante do código para dentro do container (depois de instalar as dependências)
+# Copiar o restante do código
 COPY . .
 
-# Gerar o Prisma Client antes de rodar as migrações ou outras operações
+# Gerar o Prisma Client
 RUN pnpm prisma generate
 
-# Compilar o código TypeScript (gerar o diretório dist)
-RUN pnpm run build
+# Compilar o código TypeScript
+RUN pnpm run build && ls -l /app  # Verificar se a pasta dist foi gerada
 
-# Etapa 2: Imagem de produção (usando a imagem slim para reduzir o tamanho)
+# Etapa 2: Produção
 FROM node:22.9.0-slim
 
-# Defina o diretório de trabalho
+# Instalar pnpm e netcat
+RUN npm install -g pnpm && apt-get update && apt-get install -y netcat-openbsd openssl
+
+# Definir diretório de trabalho
 WORKDIR /app
 
-# Copie as dependências e o código compilado da fase anterior (certifique-se de copiar a pasta dist)
-COPY --from=build /app/package.json /app/pnpm-lock.yaml /app/node_modules /app/
-COPY --from=build /app/dist /app/dist
+# Copiar apenas a pasta dist e dependências necessárias
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./
 
-# Exponha a porta para acessar a aplicação
+# Expor a porta
 EXPOSE 3333
-
-# Comando para rodar o aplicativo no contêiner de produção
-CMD ["node", "dist/src/main.js"]
