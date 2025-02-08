@@ -41,7 +41,7 @@ services:
         sleep 1;
       done;
       echo 'PostgreSQL está pronto!';
-      pnpm install && pnpm run build && pnpm prisma generate && pnpm run start:prod"  # Executando os comandos necessários
+      pnpm prisma migrate deploy && pnpm run start:prod"  # Executando os comandos necessários
     restart: always
     networks:
       - app-network  # Garantir que o NestJS use a mesma rede do PostgreSQL
