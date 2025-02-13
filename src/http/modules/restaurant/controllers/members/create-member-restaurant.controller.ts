@@ -48,7 +48,7 @@ export class CreateMemberRestaurantDto {
   password!: string
 
   @ApiProperty({
-    description: 'Senha do funcionario',
+    description: 'Cargo do funcionario',
     example: '05c34764-fd23-4f48-9879-c1bd8074b4b7',
   })
   roleId!: string
