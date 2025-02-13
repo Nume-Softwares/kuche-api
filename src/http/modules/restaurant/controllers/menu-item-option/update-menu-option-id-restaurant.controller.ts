@@ -2,7 +2,9 @@ import {
   Body,
   Controller,
   HttpCode,
-  Post,
+  NotFoundException,
+  Param,
+  Patch,
   UnauthorizedException,
 } from '@nestjs/common'
 import {
@@ -19,51 +21,64 @@ import { z } from 'zod'
 import { CurrentRestaurant } from '@/http/modules/current-restaurant.decorator'
 import { TokenPayloadRestaurantSchema } from '../../auth/jwt.strategy'
 
-const createMenuItemOptionRestaurantSchema = z.object({
+const updateComplementRestaurantSchema = z.object({
   name: z.string(),
   price: z.number(),
 })
 
-export class CreateMenuItemOptionRestaurantDto {
-  @ApiProperty({
-    description: 'Nome do Item',
-    example: 'Pizza de Calabresa',
-  })
-  name!: string
+const getComplementIdRestaurantSchema = z.string()
 
-  @ApiProperty({
-    description: 'Preço do item',
-    example: 30.0,
-  })
-  price!: number
-}
-
-type TypeCreateMenuItemOptionRestaurantSchema = z.infer<
-  typeof createMenuItemOptionRestaurantSchema
+type GetComplementIdRestaurantSchema = z.infer<
+  typeof getComplementIdRestaurantSchema
 >
 
-@ApiTags('Menu Item Option')
+const queryValidationPipe = new ZodValidationPipe(
+  getComplementIdRestaurantSchema,
+)
+
+export class UpdateComplementRestaurantDto {
+  @ApiProperty({
+    description: 'ID do Complemento',
+    example: 'c9ce5fb1-9785-4fae-9011-14403989f1d0',
+  })
+  complementId!: string
+
+  @ApiProperty({
+    description: 'Nome do Complemento',
+    example: 'Queijo extra',
+  })
+  name!: string
+}
+
+type TypeUpdateComplementRestaurantSchema = z.infer<
+  typeof updateComplementRestaurantSchema
+>
+
+@ApiTags('Complementos')
 @ApiBearerAuth('access-token')
 @Controller('/restaurant/menu-item-option')
-export class CreateMenuItemOptionRestaurantController {
+export class UpdateComplementRestaurantController {
   constructor(private prisma: PrismaService) {}
 
-  @Post()
+  @Patch(':complementId')
   @HttpCode(204)
-  @ApiOperation({ summary: 'Cria um complemento para o item' })
+  @ApiOperation({ summary: 'Atualizar o complemento' })
   @ApiBody({
-    description: 'Parâmetros necessários para criar um complemento no item',
-    type: CreateMenuItemOptionRestaurantDto,
+    description: 'Parâmetros necessários para atualizar o Complemento',
+    type: UpdateComplementRestaurantDto,
   })
   @ApiResponse({
     status: 204,
-    description: 'Complemento para itens criado!',
+    description: 'Complemento atualizado!',
   })
   @ApiResponse({ status: 401, description: 'Não Autorizado' })
+  @ApiResponse({ status: 404, description: 'Complemento não encontrado' })
   async handle(
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
-    @Body(new ZodValidationPipe(createMenuItemOptionRestaurantSchema))
-    body: TypeCreateMenuItemOptionRestaurantSchema,
+    @Param('complementId', queryValidationPipe)
+    complementId: GetComplementIdRestaurantSchema,
+    @Body(new ZodValidationPipe(updateComplementRestaurantSchema))
+    body: TypeUpdateComplementRestaurantSchema,
   ) {
     const { name, price } = body
 
@@ -89,17 +104,29 @@ export class CreateMenuItemOptionRestaurantController {
     }
 
     if (
-      !['Admin', 'Gerente', 'Suporte Técnico', 'Marketing'].includes(
-        getMember.role.name,
-      )
+      !['Admin', 'Gerente', 'Suporte Técnico'].includes(getMember.role.name)
     ) {
       throw new UnauthorizedException('You are not allowed to do this')
     }
 
-    const newMenuItemOption = await this.prisma.menuItemOption.create({
+    const complementExists = await this.prisma.menuItemOption.findUnique({
+      where: {
+        id: complementId,
+        restaurantId: payload.restaurantId,
+      },
+    })
+
+    if (!complementExists) {
+      throw new NotFoundException('Complement not found')
+    }
+
+    const updatedStatusComplement = await this.prisma.menuItemOption.update({
       data: {
         name,
         price,
+      },
+      where: {
+        id: complementId,
         restaurantId: payload.restaurantId,
       },
       select: {
@@ -109,11 +136,11 @@ export class CreateMenuItemOptionRestaurantController {
 
     await this.prisma.log.create({
       data: {
-        event: 'Criou um complemento',
+        event: 'Atualizou um complemento',
         description: '',
-        logType: 'CREATE',
+        logType: 'UPDATE',
         affectedEntity: 'MENU_ITEM_OPTIONS',
-        affectedId: newMenuItemOption.id,
+        affectedId: updatedStatusComplement.id,
         memberId: payload.sub,
         restaurantId: payload.restaurantId,
       },
