@@ -51,8 +51,8 @@ export class GetCategoryIdRestaurantController {
   @ApiResponse({ status: 401, description: 'Não Autorizado' })
   async handle(
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
-    @Param('memberId', queryValidationPipe)
-    memberId: GetCategoryIdRestaurantSchema,
+    @Param('categoryId', queryValidationPipe)
+    categoryId: GetCategoryIdRestaurantSchema,
   ) {
     const member = await this.prisma.member.findUnique({
       where: { id: payload.sub },
@@ -81,7 +81,7 @@ export class GetCategoryIdRestaurantController {
 
     const getCategory = await this.prisma.category.findUnique({
       where: {
-        id: memberId,
+        id: categoryId,
         restaurantId: payload.restaurantId,
       },
       select: {

@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   NotFoundException,
+  Param,
   Patch,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -21,9 +22,16 @@ import { CurrentRestaurant } from '@/http/modules/current-restaurant.decorator'
 import { TokenPayloadRestaurantSchema } from '../../auth/jwt.strategy'
 
 const statusCategoryRestaurantSchema = z.object({
-  categoryId: z.string(),
   isActive: z.boolean(),
 })
+
+const getCategoryIdRestaurantSchema = z.string().uuid()
+
+type GetCategoryIdRestaurantSchema = z.infer<
+  typeof getCategoryIdRestaurantSchema
+>
+
+const queryValidationPipe = new ZodValidationPipe(getCategoryIdRestaurantSchema)
 
 export class StatusCategoryRestaurantDto {
   @ApiProperty({
@@ -45,7 +53,7 @@ type TypeStatusCategoryRestaurantSchema = z.infer<
 
 @ApiTags('Categorias')
 @ApiBearerAuth('access-token')
-@Controller('/restaurant/categories-status')
+@Controller('/restaurant/categories/:categoryId/status')
 export class StatusCategoryRestaurantController {
   constructor(private prisma: PrismaService) {}
 
@@ -64,10 +72,12 @@ export class StatusCategoryRestaurantController {
   @ApiResponse({ status: 404, description: 'Categoria não encontrada' })
   async handle(
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
+    @Param('categoryId', queryValidationPipe)
+    categoryId: GetCategoryIdRestaurantSchema,
     @Body(new ZodValidationPipe(statusCategoryRestaurantSchema))
     body: TypeStatusCategoryRestaurantSchema,
   ) {
-    const { categoryId, isActive } = body
+    const { isActive } = body
 
     const getMember = await this.prisma.member.findUnique({
       where: { id: payload.sub },

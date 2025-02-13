@@ -1,9 +1,9 @@
 import {
-  Body,
   Controller,
   Delete,
   HttpCode,
   NotFoundException,
+  Param,
   UnauthorizedException,
 } from '@nestjs/common'
 import {
@@ -20,9 +20,13 @@ import { z } from 'zod'
 import { CurrentRestaurant } from '@/http/modules/current-restaurant.decorator'
 import { TokenPayloadRestaurantSchema } from '../../auth/jwt.strategy'
 
-const deleteCategoryRestaurantSchema = z.object({
-  categoryId: z.string(),
-})
+const getCategoryIdRestaurantSchema = z.string().uuid()
+
+type GetCategoryIdRestaurantSchema = z.infer<
+  typeof getCategoryIdRestaurantSchema
+>
+
+const queryValidationPipe = new ZodValidationPipe(getCategoryIdRestaurantSchema)
 
 export class DeleteCategoryRestaurantDto {
   @ApiProperty({
@@ -32,17 +36,13 @@ export class DeleteCategoryRestaurantDto {
   categoryId!: string
 }
 
-type TypeDeleteCategoryRestaurantSchema = z.infer<
-  typeof deleteCategoryRestaurantSchema
->
-
 @ApiTags('Categorias')
 @ApiBearerAuth('access-token')
 @Controller('/restaurant/categories')
 export class DeleteCategoryRestaurantController {
   constructor(private prisma: PrismaService) {}
 
-  @Delete()
+  @Delete(':categoryId')
   @HttpCode(204)
   @ApiOperation({ summary: 'Deletar uma Categoria' })
   @ApiBody({
@@ -57,11 +57,9 @@ export class DeleteCategoryRestaurantController {
   @ApiResponse({ status: 404, description: 'Categoria não encontrada' })
   async handle(
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
-    @Body(new ZodValidationPipe(deleteCategoryRestaurantSchema))
-    body: TypeDeleteCategoryRestaurantSchema,
+    @Param('categoryId', queryValidationPipe)
+    categoryId: GetCategoryIdRestaurantSchema,
   ) {
-    const { categoryId } = body
-
     const getMember = await this.prisma.member.findUnique({
       where: { id: payload.sub },
       select: {
@@ -100,20 +98,23 @@ export class DeleteCategoryRestaurantController {
       throw new NotFoundException('Category not found')
     }
 
-    const updatedStatusCategory = await this.prisma.category.delete({
-      where: {
-        id: categoryId,
-        restaurantId: payload.restaurantId,
-      },
-    })
+    await this.prisma.$transaction([
+      this.prisma.category.delete({
+        where: { id: categoryId, restaurantId: payload.restaurantId },
+      }),
+      this.prisma.menuItem.deleteMany({
+        where: { categoryId },
+      }),
+    ])
 
     await this.prisma.log.create({
       data: {
         event: 'Deletou uma categoria',
-        description: '',
+        description:
+          'Deletou uma categoria e todas os itens que estão atrelados a ele',
         logType: 'DELETE',
         affectedEntity: 'CATEGORY',
-        affectedId: updatedStatusCategory.id,
+        affectedId: categoryExists.id,
         memberId: payload.sub,
         restaurantId: payload.restaurantId,
       },

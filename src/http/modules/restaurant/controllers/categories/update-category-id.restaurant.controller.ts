@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   NotFoundException,
+  Param,
   Patch,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -21,10 +22,16 @@ import { CurrentRestaurant } from '@/http/modules/current-restaurant.decorator'
 import { TokenPayloadRestaurantSchema } from '../../auth/jwt.strategy'
 
 const updateCategoryRestaurantSchema = z.object({
-  categoryId: z.string(),
   name: z.string(),
-  isActive: z.boolean(),
 })
+
+const getCategoryIdRestaurantSchema = z.string()
+
+type GetCategoryIdRestaurantSchema = z.infer<
+  typeof getCategoryIdRestaurantSchema
+>
+
+const queryValidationPipe = new ZodValidationPipe(getCategoryIdRestaurantSchema)
 
 export class UpdateCategoryRestaurantDto {
   @ApiProperty({
@@ -38,12 +45,6 @@ export class UpdateCategoryRestaurantDto {
     example: 'Pizzas',
   })
   name!: string
-
-  @ApiProperty({
-    description: 'Ativar ou Desativar Categoria',
-    example: false,
-  })
-  isActive!: boolean
 }
 
 type TypeUpdateCategoryRestaurantSchema = z.infer<
@@ -56,7 +57,7 @@ type TypeUpdateCategoryRestaurantSchema = z.infer<
 export class UpdateCategoryRestaurantController {
   constructor(private prisma: PrismaService) {}
 
-  @Patch()
+  @Patch(':categoryId')
   @HttpCode(204)
   @ApiOperation({ summary: 'Atualizar a Categoria' })
   @ApiBody({
@@ -71,10 +72,12 @@ export class UpdateCategoryRestaurantController {
   @ApiResponse({ status: 404, description: 'Categoria não encontrada' })
   async handle(
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
+    @Param('categoryId', queryValidationPipe)
+    categoryId: GetCategoryIdRestaurantSchema,
     @Body(new ZodValidationPipe(updateCategoryRestaurantSchema))
     body: TypeUpdateCategoryRestaurantSchema,
   ) {
-    const { categoryId, isActive, name } = body
+    const { name } = body
 
     const getMember = await this.prisma.member.findUnique({
       where: { id: payload.sub },
@@ -117,7 +120,6 @@ export class UpdateCategoryRestaurantController {
     const updatedStatusCategory = await this.prisma.category.update({
       data: {
         name: name,
-        isActive: isActive,
       },
       where: {
         id: categoryId,
