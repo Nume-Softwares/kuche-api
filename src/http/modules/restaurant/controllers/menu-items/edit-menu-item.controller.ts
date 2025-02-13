@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   NotFoundException,
+  Param,
   Patch,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -19,14 +20,27 @@ import { ZodValidationPipe } from '@/http/shared/pipes/zod-valitation-pipe'
 import { z } from 'zod'
 import { CurrentRestaurant } from '@/http/modules/current-restaurant.decorator'
 import { TokenPayloadRestaurantSchema } from '../../auth/jwt.strategy'
+import { S3Service } from '@/http/shared/services/s3.service'
+import { randomUUID } from 'node:crypto'
+import { ConfigService } from '@nestjs/config'
+import { Env } from '@/env'
 
 const updateMenuItemRestaurantSchema = z.object({
-  menuItemId: z.string(),
   name: z.string(),
   description: z.string(),
   price: z.number(),
   categoryId: z.string(),
+  imageBase64: z.string().base64(),
+  complementIds: z.array(z.string().uuid()),
 })
+
+const getMenuItemIdRestaurantSchema = z.string().uuid()
+
+type GetMenuItemIdRestaurantSchema = z.infer<
+  typeof getMenuItemIdRestaurantSchema
+>
+
+const queryValidationPipe = new ZodValidationPipe(getMenuItemIdRestaurantSchema)
 
 export class UpdateMenuItemRestaurantDto {
   @ApiProperty({
@@ -58,6 +72,12 @@ export class UpdateMenuItemRestaurantDto {
     example: 'c29tZXN0dXJlcy1jdXN0LWRlZmF1bHQ=',
   })
   categoryId!: string
+
+  @ApiProperty({
+    description: 'Imagem do item em base64',
+    example: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...',
+  })
+  imageBase64!: string
 }
 
 type TypeUpdateMenuItemRestaurantSchema = z.infer<
@@ -68,9 +88,13 @@ type TypeUpdateMenuItemRestaurantSchema = z.infer<
 @ApiBearerAuth('access-token')
 @Controller('/restaurant/menu-item')
 export class UpdateMenuItemRestaurantController {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private s3Service: S3Service,
+    private configService: ConfigService<Env, true>,
+  ) {}
 
-  @Patch()
+  @Patch(':menuItemId')
   @HttpCode(204)
   @ApiOperation({ summary: 'Atualizar um Item do Menu' })
   @ApiBody({
@@ -85,10 +109,13 @@ export class UpdateMenuItemRestaurantController {
   @ApiResponse({ status: 404, description: 'MenuItem não encontrado' })
   async handle(
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
+    @Param('menuItemId', queryValidationPipe)
+    menuItemId: GetMenuItemIdRestaurantSchema,
     @Body(new ZodValidationPipe(updateMenuItemRestaurantSchema))
     body: TypeUpdateMenuItemRestaurantSchema,
   ) {
-    const { categoryId, name, description, menuItemId, price } = body
+    const { categoryId, name, description, price, imageBase64, complementIds } =
+      body
 
     const getMember = await this.prisma.member.findUnique({
       where: { id: payload.sub },
@@ -130,11 +157,31 @@ export class UpdateMenuItemRestaurantController {
       throw new NotFoundException('Menu Item not found')
     }
 
+    if (menuItemExists.imageUrl) {
+      await this.s3Service.deleteFile(
+        this.configService.get('AWS_BUCKET'),
+        menuItemExists.imageUrl,
+      )
+    }
+
+    const buffer = Buffer.from(imageBase64, 'base64')
+
+    const key = `menu-items/${
+      payload.restaurantId
+    }/${Date.now()}-${randomUUID()}.png`
+
+    await this.s3Service.uploadFile(
+      this.configService.get('AWS_BUCKET'),
+      key,
+      buffer,
+    )
+
     const updateMenuItem = await this.prisma.menuItem.update({
       data: {
         name,
         price,
         description,
+        imageUrl: key,
         categoryId,
       },
       where: {
@@ -146,9 +193,22 @@ export class UpdateMenuItemRestaurantController {
       },
     })
 
+    await this.prisma.menuItemOptionRelation.deleteMany({
+      where: {
+        menuItemId: menuItemExists.id,
+      },
+    })
+
+    await this.prisma.menuItemOptionRelation.createMany({
+      data: complementIds.map((optionId) => ({
+        menuItemId: menuItemExists.id,
+        optionId,
+      })),
+    })
+
     await this.prisma.log.create({
       data: {
-        event: 'Atualizou uma item no menu',
+        event: 'Atualizou um item no menu',
         description: '',
         logType: 'UPDATE',
         affectedEntity: 'MENU_ITEM',

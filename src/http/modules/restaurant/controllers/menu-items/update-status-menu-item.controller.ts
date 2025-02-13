@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   NotFoundException,
+  Param,
   Patch,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -21,17 +22,18 @@ import { CurrentRestaurant } from '@/http/modules/current-restaurant.decorator'
 import { TokenPayloadRestaurantSchema } from '../../auth/jwt.strategy'
 
 const updateStatusMenuItemSchema = z.object({
-  menuItemId: z.string(),
   isActive: z.boolean(),
 })
 
-export class UpdateStatusMenuItemRestaurantDto {
-  @ApiProperty({
-    description: 'ID do Item',
-    example: 'f879673d-af12-4f26-ac12-ccf5fcc57418',
-  })
-  menuItemId!: string
+const updateStatusMenuItemIdSchema = z.string().uuid()
 
+type DeleteMenuItemIdRestaurantSchema = z.infer<
+  typeof updateStatusMenuItemIdSchema
+>
+
+const queryValidationPipe = new ZodValidationPipe(updateStatusMenuItemIdSchema)
+
+export class UpdateStatusMenuItemRestaurantDto {
   @ApiProperty({
     description: 'Ativar ou Desativar Item do Menu?',
     example: false,
@@ -47,7 +49,7 @@ type TypeUpdateStatusMenuItemSchema = z.infer<typeof updateStatusMenuItemSchema>
 export class UpdateStatusMenuItemRestaurantController {
   constructor(private prisma: PrismaService) {}
 
-  @Patch()
+  @Patch(':menuItemId')
   @HttpCode(204)
   @ApiOperation({ summary: 'Atualizar o status do menu-item' })
   @ApiBody({
@@ -62,10 +64,12 @@ export class UpdateStatusMenuItemRestaurantController {
   @ApiResponse({ status: 404, description: 'MenuItem não encontrada' })
   async handle(
     @CurrentRestaurant() payload: TokenPayloadRestaurantSchema,
+    @Param('menuItemId', queryValidationPipe)
+    menuItemId: DeleteMenuItemIdRestaurantSchema,
     @Body(new ZodValidationPipe(updateStatusMenuItemSchema))
     body: TypeUpdateStatusMenuItemSchema,
   ) {
-    const { menuItemId, isActive } = body
+    const { isActive } = body
 
     const getMember = await this.prisma.member.findUnique({
       where: { id: payload.sub },

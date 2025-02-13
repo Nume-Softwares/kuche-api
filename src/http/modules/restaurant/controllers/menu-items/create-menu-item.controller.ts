@@ -18,12 +18,18 @@ import { ZodValidationPipe } from '@/http/shared/pipes/zod-valitation-pipe'
 import { z } from 'zod'
 import { CurrentRestaurant } from '@/http/modules/current-restaurant.decorator'
 import { TokenPayloadRestaurantSchema } from '../../auth/jwt.strategy'
+import { S3Service } from '@/http/shared/services/s3.service'
+import { ConfigService } from '@nestjs/config'
+import { Env } from '@/env'
+import { randomUUID } from 'node:crypto'
 
 const createMenuItemRestaurantControllerSchema = z.object({
   name: z.string(),
   description: z.string(),
+  imageBase64: z.string().base64(),
   price: z.number(),
   categoryId: z.string(),
+  complementIds: z.array(z.string().uuid()),
 })
 
 export class CreateMenuItemRestaurantDto {
@@ -50,6 +56,12 @@ export class CreateMenuItemRestaurantDto {
     example: 'c29tZXN0dXJlcy1jdXN0LWRlZmF1bHQ=',
   })
   categoryId!: string
+
+  @ApiProperty({
+    description: 'Imagem do item em base64',
+    example: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...',
+  })
+  imageBase64!: string
 }
 
 type TypeCreateMenuItemRestaurantControllerSchema = z.infer<
@@ -60,7 +72,11 @@ type TypeCreateMenuItemRestaurantControllerSchema = z.infer<
 @ApiBearerAuth('access-token')
 @Controller('/restaurant/menu-item')
 export class CreateMenuItemRestaurantController {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private s3Service: S3Service,
+    private configService: ConfigService<Env, true>,
+  ) {}
 
   @Post()
   @HttpCode(204)
@@ -79,7 +95,8 @@ export class CreateMenuItemRestaurantController {
     @Body(new ZodValidationPipe(createMenuItemRestaurantControllerSchema))
     body: TypeCreateMenuItemRestaurantControllerSchema,
   ) {
-    const { name, categoryId, description, price } = body
+    const { name, categoryId, description, price, imageBase64, complementIds } =
+      body
 
     const getMember = await this.prisma.member.findUnique({
       where: { id: payload.sub },
@@ -110,6 +127,18 @@ export class CreateMenuItemRestaurantController {
       throw new UnauthorizedException('You are not allowed to do this')
     }
 
+    const buffer = Buffer.from(imageBase64, 'base64')
+
+    const key = `menu-items/${
+      payload.restaurantId
+    }/${Date.now()}-${randomUUID()}.png`
+
+    await this.s3Service.uploadFile(
+      this.configService.get('AWS_BUCKET'),
+      key,
+      buffer,
+    )
+
     const newMenuItem = await this.prisma.menuItem.create({
       data: {
         name,
@@ -117,11 +146,21 @@ export class CreateMenuItemRestaurantController {
         price: price,
         categoryId: categoryId,
         restaurantId: payload.restaurantId,
+        imageUrl: key,
       },
       select: {
         id: true,
       },
     })
+
+    if (complementIds.length > 0) {
+      await this.prisma.menuItemOptionRelation.createMany({
+        data: complementIds.map((optionId) => ({
+          menuItemId: newMenuItem.id,
+          optionId,
+        })),
+      })
+    }
 
     await this.prisma.log.create({
       data: {
