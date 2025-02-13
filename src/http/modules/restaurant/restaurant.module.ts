@@ -10,7 +10,7 @@ import { AuthRestaurantModule } from './auth/authRestaurant.module'
 import { CreateCategoryRestaurantController } from './controllers/categories/create-category.restaurant.controller'
 import { GetCategoriesRestaurantController } from './controllers/categories/get-categories.restaurant.controller'
 import { StatusCategoryRestaurantController } from './controllers/categories/status-category.restaurant.controller'
-import { UpdateCategoryRestaurantController } from './controllers/categories/update-category.restaurant.controller'
+import { UpdateCategoryRestaurantController } from './controllers/categories/update-category-id.restaurant.controller'
 import { GetMembersRestaurantController } from './controllers/members/get-members-restaurant.controller'
 import { CreateMemberRestaurantController } from './controllers/members/create-member-restaurant.controller'
 import { CreateRestaurantController } from './controllers/restaurant/create-restaurant.controller'
@@ -23,12 +23,22 @@ import { UpdateStatusMenuItemRestaurantController } from './controllers/menu-ite
 import { DeleteCategoryRestaurantController } from './controllers/categories/delete-category.restaurant.controller'
 import { DeleteMemberRestaurantController } from './controllers/members/delete-member-restaurant.controller'
 import { DeleteMenuItemRestaurantController } from './controllers/menu-items/delete-menu-item.controller'
-import { CreateMenuItemOptionRestaurantController } from './controllers/menu-item-option/create-menu-option.controller'
+import { CreateMenuItemOptionRestaurantController } from './controllers/menu-item-option/create-menu-option-restaurant.controller'
 import { UpdateStatusMemberRestaurantController } from './controllers/members/update-status-member-restaurant.controller'
 import { GetMemberIdRestaurantController } from './controllers/members/get-member-id.controller'
 import { UpdateMemberIdRestaurantController } from './controllers/members/update-member-id-restaurant.controller'
 import { AuthenticateMemberGoogleController } from './controllers/members/authenticate-member-google-restaurant.controller'
 import { GetCategoryIdRestaurantController } from './controllers/categories/get-category-id.restaurant.controller'
+import { GetComplementIdRestaurantController } from './controllers/menu-item-option/get-menu-option-id-restaurant.controller'
+import { UpdateComplementRestaurantController } from './controllers/menu-item-option/update-menu-option-id-restaurant.controller'
+import { StatusComplementRestaurantController } from './controllers/menu-item-option/status-menu-option-restaurant.controller'
+import { GetComplementsRestaurantController } from './controllers/menu-item-option/get-menu-option-restaurant.controller'
+import { DeleteComplementRestaurantController } from './controllers/menu-item-option/delete-menu-option-restaurant.controller'
+import { S3Service } from '@/http/shared/services/s3.service'
+import { GetMenuItemsRestaurantController } from './controllers/menu-items/get-menu-item.controller'
+import { GetAciveCategoriesRestaurantController } from './controllers/categories/get-active-categories.restaurant.controller'
+import { GetDetailsProductIdRestaurantController } from './controllers/menu-items/details-menu-item-id.controller'
+import { GetAllComplementsRestaurantController } from './controllers/menu-item-option/get-all-menu-option-restaurant.controller'
 
 @Module({
   imports: [
@@ -76,6 +86,15 @@ import { GetCategoryIdRestaurantController } from './controllers/categories/get-
     UpdateMemberIdRestaurantController,
     AuthenticateMemberGoogleController,
     GetCategoryIdRestaurantController,
+    GetComplementIdRestaurantController,
+    UpdateComplementRestaurantController,
+    StatusComplementRestaurantController,
+    GetComplementsRestaurantController,
+    DeleteComplementRestaurantController,
+    GetMenuItemsRestaurantController,
+    GetAciveCategoriesRestaurantController,
+    GetDetailsProductIdRestaurantController,
+    GetAllComplementsRestaurantController,
   ],
   providers: [
     PrismaService,
@@ -83,6 +102,7 @@ import { GetCategoryIdRestaurantController } from './controllers/categories/get-
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
+    S3Service,
   ],
   exports: [PrismaService, AuthRestaurantModule, PassportModule],
 })
